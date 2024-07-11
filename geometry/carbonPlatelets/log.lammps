@@ -1,0 +1,15 @@
+LAMMPS (27 Jun 2024)
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: generate_platelets.lammps
+#//     File Type: LAMMPS input script
+#//     Description: This script generates a graphite platelet (or a batch of graphite layers) to be later used for MC simlations in LAMMPS.
+#//                  The base layer used in the script has been generated from VMD Modeling plugins, to ensure a realistic structure, comprehensive of the ABAB stacking sequence.
+#//                  as well as the bounds, angles, dihedrals and improper dihedrals that define the graphite structure.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-02
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+variable name string generate_platelets
+log log.${name}
+log log.generate_platelets

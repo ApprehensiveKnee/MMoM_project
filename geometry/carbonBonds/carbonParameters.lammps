@@ -1,0 +1,20 @@
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: carbonParameters.lammps
+#//     File Type: LAMMPS input script
+#//     Description: The following script containes the parameters for the C-C bonds in the graphite platelets generated in the script generate_platelets.lammps
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-02
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
+
+# The parameters are taken from the OPLS-AA (Optimised Potentials for Liquid Simulations-All-Atom) force field
+# https://dasher.wustl.edu/tinker/distribution/params/oplsaa.prm
+pair_coeff 1 1 0.066 3.4
+bond_coeff 1 469 1.4   
+angle_coeff 1 63 120           
+dihedral_coeff 1 0 7.25 0 0
+improper_coeff 1 5 180
+
+# ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------

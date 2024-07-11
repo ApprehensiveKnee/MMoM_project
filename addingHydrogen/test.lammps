@@ -1,0 +1,146 @@
+
+# --- log file ---
+variable name string test
+log ./logs/log.${name}
+# --- log file ---
+
+# 1. Initialization
+units metal
+boundary p p p
+atom_style molecular
+neighbor 1.0 bin
+neigh_modify delay 2 one 4000
+pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
+#kspace_style pppm 1.0e-4
+# *--* C-C parameters *--*
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+# *--* C-C parameters *--*
+
+
+# 2. Read the graphite platelet data file
+read_data ../geometry/carbonPlatelets/final.data  extra/atom/types 1
+
+mass 2 2.016 # For now at least, in accordance with the paper by Wang and Johnson, 
+             # 1998, the hydrogen atoms are regarded as simple spherical atoms
+
+# 3. Define the potentials
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+pair_coeff 1 1 lj/cut 0.066 3.4
+bond_coeff 1 469 1.4   
+angle_coeff 1 63 120           
+dihedral_coeff 1 0 7.25 0 0
+improper_coeff 1 5 180 
+special_bonds lj 0.0 0.0 0.5
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+variable alpha equal 1.713
+variable sigma equal 1.567
+variable gamma equal 0.00993
+variable c6 equal 12.14
+variable c8 equal 215.2
+variable c9 equal 143.1
+variable c10 equal 4813.9
+variable rc equal 8.321
+pair_coeff 2 2 sg ${alpha} ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} # H-H potentials
+#pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 # H-H potentials
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+variable sigma_CC equal 3.43 # Å
+variable sigma_HH equal 3.075 # Å
+variable sigma_CH_geo equal sqrt(${sigma_CC}*${sigma_HH}) # Å
+variable sigma_CH_arit equal 0.5*(${sigma_CC}+${sigma_HH}) # Å 
+
+variable P_par equal 0.57 # Å^3
+variable P_perp equal 1.995 # Å^3
+variable P_h equal 0.81 # Å^3
+variable E_h equal 2.337e5 # eV
+variable E_c equal 1.39254e5 # eV
+
+variable epsilon equal v_E_h*v_E_c*v_P_h*(4*v_P_par+2*v_P_perp)/(v_sigma_HH^6*(v_E_h+v_E_c))*0.001
+
+pair_coeff 1 2 cb ${epsilon} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential 
+#pair_coeff 1 2 lj/cut 0.3025 2.065
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+
+# 4. Generate the initial hydrogen atoms
+lattice sc 3
+create_atoms 2 box ratio 0.005 428795
+lattice none 1
+# Print the number of hydrogen atoms to file and delete the overlapping hydrogen atoms generated
+
+variable hydrogen atom "type==2"
+group hydrogen dynamic all var hydrogen
+variable nH equal count(hydrogen)
+fix myat1 all ave/time 100 10 1000 v_nH file hydrogenCount.data
+
+group           C type 1
+group           H2 type 2
+delete_atoms    overlap 4 H2 C 
+reset_atoms     id sort yes
+
+# Define the atoms in the outer part of each platelet which will be fixed
+variable        L_min equal 11.2 # all carbons are fixed
+region          rfix_out block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side out
+region          rfix_in block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side in
+group           fix_region_group region rfix_out
+group           mob_region_group region rfix_in
+group           fix_carbons intersect fix_region_group C
+group           mob_carbons intersect mob_region_group C
+group           mob_atoms   union mob_carbons H2
+
+# 5. Equilibration step
+thermo 100
+variable        T equal 300
+velocity        mob_atoms create ${T} 1234567 dist gaussian
+# fix             nve1 mob_atoms nve
+# compute         tcar mob_carbons temp
+# fix             myber1 mob_atoms temp/berendsen ${T} ${T} 200
+# fix_modify      myber1 temp tcar
+# compute         tgas H2 temp
+# fix             myber2 mob_atoms temp/berendsen ${T} ${T} 200
+# fix_modify      myber2 temp tgas
+#----------------------------------------------------------------
+compute_modify thermo_temp dynamic yes
+compute ctH2 H2 temp
+compute_modify ctH2 dynamic yes
+fix mynvt1 H2 nvt temp ${T} ${T} 0.1
+fix_modify mynvt1 temp ctH2
+compute ctC mob_carbons temp
+fix mynvt2 mob_carbons nvt temp ${T} ${T} 0.1
+fix_modify mynvt2 temp ctC
+timestep 0.0005
+#thermo_style custom step temp pe ke etotal press vol
+#----------------------------------------------------------------
+# fix             npt1 mob_atoms npt temp ${T} ${T} 200 iso 113 113 2000
+fix             myspr C spring/self 5
+
+# Fix the motion of the outer carbons
+fix             sf fix_carbons setforce 0.0 0.0 0.0
+velocity        fix_carbons set 0.0 0.0 0.0
+
+dump            ./dumps/test_dump all atom 10 test.lammpstrj
+
+run 20000
+
+# 6. Production step
+variable tfac equal 3.0/3.0
+# variable xlo equal xlo+0.1
+# variable xhi equal xhi-0.1
+# variable ylo equal ylo+0.1
+# variable yhi equal yhi-0.1
+# variable zlo equal zlo+0.1
+# variable zhi equal zhi-0.1
+# region system block ${xlo} ${xhi} ${ylo} ${yhi} ${zlo} ${zhi}
+fix fgcmc H2 gcmc 100 100 0 2 65899 ${T} -0.5 0.1 &
+    tfac_insert ${tfac} group H2 &
+    pressure 113 #region system
+run 45000
+
+write_data     ensemble.data
+write_dump     all atom ./dumps/ensemble.lammpstrj
+

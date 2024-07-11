@@ -1,0 +1,151 @@
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: generate_platelets.lammps
+#//     File Type: LAMMPS input script
+#//     Description: This script generates a graphite platelet (or a batch of graphite layers) to be later used for MC simlations in LAMMPS.
+#//                  The base layer used in the script has been generated from VMD Modeling plugins, to ensure a realistic structure, comprehensive of the ABAB stacking sequence.
+#//                  as well as the bounds, angles, dihedrals and improper dihedrals that define the graphite structure.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-02
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+variable name string generate_platelets
+log log.${name}
+
+
+units           metal                 # Use 'metal' units (suitable for carbon structures)
+dimension       3                     # 3D simulation
+atom_style      molecular                  # Define the atom style (full for compatibility with later simulations)
+boundary        p p p                 # No periodic boundary conditions
+pair_style lj/cut 14
+
+# ---------------------------]* C-C POTENTIALS *[----------------------------
+# Specify the bond, angle, dihedral, and improper styles for the C-C bonds (potentials)
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+special_bonds lj 0.0 0.0 0.5
+# ---------------------------]* C-C POTENTIALS *[----------------------------
+
+
+# Specify some variables:
+# - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
+variable        Lx equal "30"            # Define the in-plane dimensions
+variable        Ly equal "30"
+variable        H equal "15"         # Define the out-of-plane dimension
+# Define the number of graphite platelets and corresponding Lz dimension for the simulation box
+if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'" &
+    "quit"
+if "${H} == 9" then "variable max_layers equal 4."  &  
+                    "variable Lz equal 18" &
+                    "print 'Importing platelet_n4.data'" &
+                    "read_data templates/platelet_n4.data" 
+if  "${H} == 15" then "variable max_layers equal 2." &
+                    "variable Lz equal 15" &
+                    "print 'Importing platelet_n2.data'" &
+                    "read_data templates/platelet_n2.data" 
+if "${H} == 30" then "variable max_layers equal 1." &
+                    "variable Lz equal 15" &
+                    "print 'Importing platelet_n1.data'" &
+                    "read_data templates/platelet_n1.data" 
+if "${H} == 60" then "variable max_layers equal 1." &
+                    "variable Lz equal 30" &
+                    "print 'Importing platelet_n1.data'" &
+                    "read_data templates/platelet_n1.data"
+                    
+
+
+# ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
+
+include ../carbonBonds/carbonParameters.lammps
+
+# ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
+
+# *****************************      SETTING UP THE SYSTEM      ******************************
+
+# First, center the platelets
+group           carbon_atoms type 1
+variable        carbon_xcm equal -1*xcm(carbon_atoms,x)
+variable        carbon_ycm equal -1*xcm(carbon_atoms,y)
+print          "Center of mass of the platelet: ${carbon_xcm} ${carbon_ycm}"
+displace_atoms  carbon_atoms move ${carbon_xcm} ${carbon_ycm} 0
+
+
+label           setup_loop
+# Define the variables for the restucuring of the simulation settings
+variable        groups index grp_1 grp_2 grp_3 grp_4
+variable        regions index reg_1 reg_2 reg_3 reg_4
+variable        a loop ${max_layers}
+# For each time the loop is executed, bound the atoms in the successive, stacked layers and
+# translate them to the correct position in the simulation box
+    variable    quote0 equal 3.35*(v_a-1)
+    variable    quote1 equal 3.35*(v_a-1)+0.1
+    variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($a-1)
+    region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    group       ${groups} region ${regions}
+    displace_atoms ${groups} move 0 0 ${quote} units box
+
+
+# Next iteration
+next            a
+next            regions
+next            groups
+jump            SELF setup_loop
+
+change_box      all x final -${Lx} ${Lx} y final -${Ly} ${Ly} z final -${Lz} ${Lz} units box
+reset_atoms     id sort yes
+
+# Define the atoms in the outer part of each platelet which will be fixed
+variable        L_min equal 11.5
+region          rfix_out block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side out
+region          rfix_in block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side in
+group           fix_carbons region rfix_out
+group           mob_carbons region rfix_in
+
+
+
+# *****************************      EQUILIBRATION RUN      ******************************
+
+thermo 50
+thermo_style custom step pe ke etotal temp lx ly lz press atoms
+timestep .001
+
+# Minimize at 0K will likely not be necessary, so we skip it
+
+# Heat the system to the desired temperature
+variable        T equal 298
+variable        Tstart equal 500
+velocity        mob_carbons create ${Tstart} 48455 mom yes rot yes # give initial velocities to the inner atoms
+compute         Tmob mob_carbons temp
+fix             nvt1 mob_carbons nvt temp ${Tstart} ${T} $(125.0*dt)
+fix_modify      nvt1 temp Tmob
+# Set up the output files schema
+fix             myat1 all ave/time 10 100 1000 c_Tmob file temperature_inner.dat
+# fix           myat2 all ave/time 10 100 1000 vol lx ly lz file dimensions.dat
+# fix           myat3 all ave/time 10 100 1000 pe file potential_energy.dat
+
+
+# Fix the motion of the outer carbons
+fix             sf fix_carbons setforce 0.0 0.0 0.0
+velocity        fix_carbons set 0.0 0.0 0.0
+
+dump            final_dump all atom 1 final.lammpstrj
+thermo_modify temp Tmob
+
+run 1000
+unfix           nvt1
+
+# After the NVT run, run a batch of minimiazation steps.
+minimize 1.0e-4 1.0e-6 10 10
+velocity        mob_carbons create ${T} 123456 dist gaussian
+run 50
+minimize 1.0e-4 1.0e-6 10 10
+velocity        mob_carbons create ${T} 1234567 dist gaussian
+run 50
+minimize 1.0e-4 1.0e-6 10 10
+velocity        mob_carbons create ${T} 12345678 dist gaussian
+run 50
+
+
+write_data      final.data nocoeff nofix

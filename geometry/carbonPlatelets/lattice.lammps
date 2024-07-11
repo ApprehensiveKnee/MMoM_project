@@ -1,0 +1,137 @@
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: lattice.lammps
+#//     File Type: LAMMPS input script
+#//     Description: This script generates a graphite lattice structure. The number of layers produced depends on the value of 
+#//                  the variable H, which can be set to 9, 15, 30, or 60 Å to produce 4, 2, 1, or 1 layers of graphene, respectively.
+#//                  The script uses a hexagonal lattice to create the graphite platelets, with an ABAB stacking sequence.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-01
+#//     IMPORTANT_NOTE: This script does not include the BOUND, ANGLE, DIHEDRAL, IMPROPER BONDS info, as such is not directly used
+#//                     for MC simulations. The script effectively used is the one in geometry/carbonPlatelets/generate_platelets.lammps
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+# LAMMPS Script to Generate Graphite Platelet Lattice Structures 
+# ****************************************************************************************
+#                   (No BOUND, ANGLE, DIHEDRAL, IMPROPER BONDS info )
+# ****************************************************************************************
+
+# --- log file ---
+variable name string lattice
+log log.${name}
+# --- log file ---
+
+# 1. Initialization
+units       metal                 # Use 'metal' units (suitable for carbon structures)
+dimension   3                     # 3D simulation
+boundary    f f f                 
+atom_style  atomic            # To define the carbon planes bonds
+
+# ---------------------------]* C-C POTENTIALS *[----------------------------
+# Spcify the bond, angle, dihedral, and improper styles for the C-C bonds (potentials)
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+# ---------------------------]* C-C POTENTIALS *[----------------------------
+
+
+# 2. Define the outer simulation box
+# Define the simulation box to accommodate the platelet
+# Lx, Ly  = 60 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
+# H = 9, 15, 30, and 60 Å to accomodate 4, 2, 1 and 1 layers of graphene
+variable    Lx equal "30"            # Define the in-plane dimensions
+variable    Ly equal "30"
+variable    H equal "15"         # Define the out-of-plane dimension
+# Define the number of graphite platelets and corresponding Lz dimension for the simulation box
+if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'" &
+    "quit"
+if "${H} == 9" then "variable max_layers equal 4"  &  
+                    "variable Lz equal 18" 
+if  "${H} == 15" then "variable max_layers equal 2" &
+                    "variable Lz equal 15" 
+if "${H} == 30" then "variable max_layers equal 1" &
+                    "variable Lz equal 15" 
+if "${H} == 60" then "variable max_layers equal 1" &
+                    "variable Lz equal 30" 
+
+region      simulation_box block -${Lx} ${Lx} -${Ly} ${Ly} -${Lz} ${Lz} units box
+create_box  1 simulation_box                 # Create a box with 1 atom type
+
+# 3. Create the Graphite Platelets
+# Graphite has an ABAB stacking sequence. We'll define a hexagonal lattice for the platelet.
+# The lattice constant for graphite: a = 2.46 Å (in-plane), c = 6.70 Å (out-of-plane)
+# https://en.wikipedia.org/wiki/Lattice_constant
+variable   sixth equal "1/6"
+variable   twothirds equal "2/3"
+variable   alattice equal "2.4595"
+variable   a1lattice equal "1"
+variable   a2lattice equal "1.73203"
+# Keep only the atoms on the lattice at the center of the simulation box, for
+# a total surface area of approx. 500 Å^2
+variable   boxside equal 22.5
+variable   xside equal "v_boxside/v_a1lattice/v_alattice/2"   #round ensures that we get complete unit cells
+variable   yside equal "v_boxside/v_a2lattice/v_alattice/2"
+
+# Loop to create multiple layers
+# ---------------------------]* LATTICE LAYERS DEFINEMENT *[----------------------------
+variable groups index grp_1 grp_2 grp_3 grp_4
+variable regions index reg_1 reg_2 reg_3 reg_4
+variable a loop ${max_layers}
+label loop
+    variable quote equal "-v_H/2 + (v_a-1)*v_H"
+    variable ABstack equal "v_a % 2"
+    if "${ABstack} == 0" then " lattice custom ${alattice} a1 ${a1lattice} 0 0 a2 0 ${a2lattice} 0 &
+        basis 0 0 0 &
+        basis 0.5 ${sixth} 0 &
+        basis 0.5 0.5 0 &
+        basis 0 ${twothirds} 0" &
+    else &
+        " lattice custom ${alattice} origin 0.5 ${sixth} 0 a1 ${a1lattice} 0 0 a2 0 ${a2lattice} 0  &
+        basis 0 0 0 &
+        basis 0.5 ${sixth} 0 &
+        basis 0.5 0.5 0 &
+        basis 0 ${twothirds} 0" &
+
+
+    region ${regions} block -${xside} ${xside} -${yside} ${yside} 0 0.1 units lattice
+    create_atoms 1 region ${regions}
+    mass 1 12.011  # Assign mass for carbon atoms
+
+    # Group atoms in the current layer
+    group ${groups} region reg_${a}
+    # Id ABstack == 0, then delete the atoms at the y_top edge of the layer
+    if "${ABstack} == 0" then "variable ytop equal 'v_yside - 0.3'" &
+        "region deleting_reg_$a block -${xside} ${xside} ${ytop} INF 0 0.1 units lattice" &
+        "delete_atoms region deleting_reg_$a"
+
+    # Displace atoms to the correct z position
+    displace_atoms ${groups} move 0 0 ${quote} units box
+
+# Next iteration
+next a
+next regions
+next groups
+jump SELF loop
+reset_atoms id sort yes
+print "Created ${max_layers} layers of graphene"
+
+# ---------------------------]* LATTICE LAYERS DEFINEMENT *[----------------------------
+
+
+
+# 5. Fix the Platelet (Rigid)
+# Use a fix to hold the carbon atoms rigidly in place
+# fix         hold all setforce 0.0 0.0 0.0   # Zero out all forces on the carbon atoms
+velocity    all set 0.0 0.0 0.0              # Zero out all velocities
+
+# 6. Output the Structure
+# Dump the atom coordinates to a file for visualization
+dump        lattice_dump all atom 1 lattice.lammpstrj
+
+# 7. Run a quick minimization (doesn't really do anything)
+minimize    1.0e-4 1.0e-6 100 1000
+
+# 8. Output Final Structure
+write_data lattice.data

@@ -1,0 +1,6 @@
+LAMMPS (27 Jun 2024)
+
+# --- log file ---
+variable name string test
+log ./logs/log.${name}
+log ./logs/log.test
