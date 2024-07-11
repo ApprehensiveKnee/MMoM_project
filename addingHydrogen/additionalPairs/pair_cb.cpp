@@ -235,7 +235,7 @@ void PairCrowellBrown::compute(int eflag, int vflag)
                 if (eflag) 
                 {
                   // Compute the offset for each pair of atoms if needed
-                  double cut_ij = cut[itype][jtype];
+                  double cut_ij = sqrt(cutsq[itype][jtype]);
                   double offset = (pow(sigma[itype][jtype]/cut_ij, 12) - pow(sigma[itype][jtype]/cut_ij, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos(theta) * cos(theta) + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
                   evdwl = factor_lj * 4 * epsilon[itype][jtype] *(afct + bfct - offset);
                 }
