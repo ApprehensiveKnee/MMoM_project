@@ -1,0 +1,36 @@
+&control
+    calculation = "vc-relax",
+    prefix = "graphene-base",
+    outdir = "../results/graphene-base",
+    pseudo_dir = "/home/edoardocabiati/.burai/.pseudopot"
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    ibrav = 4,
+    celldm(1) = 4.0,
+    celldm(3) = 2,
+    nat = 4,
+    ntyp = 1,
+    ecutwfc = 40.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    mixing_mode='TF'
+/
+&ions
+/
+&cell
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+ATOMIC_POSITIONS {crystal}
+    C 0.00 0.00 0.25
+    C 0.00 0.00 0.75
+    C 0.333333 0.666666 0.25
+    C 0.666666 0.333333 0.75
+K_POINTS automatic
+    6 6 2 1 1 1
