@@ -47,7 +47,7 @@ PairSilveraGoldman::~PairSilveraGoldman()
         memory->destroy(c8);
         memory->destroy(c6);
         memory->destroy(gamma);
-        memory->destroy(sigma);
+        memory->destroy(beta);
         memory->destroy(alpha);
         memory->destroy(offset);
     }
@@ -74,7 +74,7 @@ void PairSilveraGoldman::allocate()
     memory->create(c8, np1, np1, "pair:c8");
     memory->create(c6, np1, np1, "pair:c6");
     memory->create(gamma, np1, np1, "pair:gamma");
-    memory->create(sigma, np1, np1, "pair:sigma");
+    memory->create(beta, np1, np1, "pair:beta");
     memory->create(alpha, np1, np1, "pair:alpha");
     memory->create(offset, np1, np1, "pair:offset");
 }
@@ -125,7 +125,7 @@ void PairSilveraGoldman::coeff(int narg, char **arg)
     for (int i = ilo; i <= ihi; i++) {
         for (int j = MAX(jlo, i); j <= jhi; j++) {
         alpha[i][j] = alpha_one;
-        sigma[i][j] = sigma_one;
+        beta[i][j] = sigma_one;
         gamma[i][j] = gamma_one;
         c6[i][j] = c6_one;
         c8[i][j] = c8_one;
@@ -151,19 +151,19 @@ double PairSilveraGoldman::init_one(int i, int j)
     if (setflag[i][j] == 0) error->all(FLERR, "All pair coeffs are not set");
 
     if (offset_flag) {
-        double fc = exp(-(rc[i][j]/(cut[i][j]-1))*(rc[i][j]/(cut[i][j]-1)));
+        double fc = exp(-(rc[i][j]/cut[i][j]-1)*(rc[i][j]/cut[i][j]-1));
         double r6 = pow(rc[i][j],6);
         double r8 = r6*rc[i][j]*rc[i][j];
         double r9 = r8*rc[i][j];
         double r10 = r9*rc[i][j];
         if(cut[i][j] > rc[i][j])  fc = 1.0;
         offset[i][j] =
-            exp(alpha[i][j]-sigma[i][j]*cut[i][j]-gamma[i][j]*cut[i][j]*cut[i][j]) - (c6[i][j]/r6+c8[i][j]/r8+c10[i][j]/r10)*fc + (c9[i][j]/r9)*fc;
+            exp(alpha[i][j]-beta[i][j]*cut[i][j]-gamma[i][j]*cut[i][j]*cut[i][j]) - (c6[i][j]/r6+c8[i][j]/r8+c10[i][j]/r10)*fc + (c9[i][j]/r9)*fc;
     } else
         offset[i][j] = 0.0;
 
     alpha[j][i] = alpha[i][j];
-    sigma[j][i] = sigma[i][j];
+    beta[j][i] = beta[i][j];
     gamma[j][i] = gamma[i][j];
     c6[j][i] = c6[i][j];
     c8[j][i] = c8[i][j];
@@ -230,14 +230,14 @@ void PairSilveraGoldman::compute(int eflag, int vflag)
           r10 = r9*r;
           r11 = r10*r;
           r12 = r11*r;
-          sg1 = exp(alpha[itype][jtype] - sigma[itype][jtype]*r - gamma[itype][jtype]*r*r)*(sigma[itype][jtype]/r + 2*gamma[itype][jtype]);
-          afct = exp(-gamma[itype][jtype]*r*r - sigma[itype][jtype]*r + alpha[itype][jtype]);
+          sg1 = exp(alpha[itype][jtype] - beta[itype][jtype]*r - gamma[itype][jtype]*r*r)*(beta[itype][jtype]/r + 2*gamma[itype][jtype]);
+          afct = exp(-gamma[itype][jtype]*r*r - beta[itype][jtype]*r + alpha[itype][jtype]);
           sg2 = -6*c6[itype][jtype]/r8 - 8*c8[itype][jtype]/r10 - 10*c10[itype][jtype]/r12 + 9*c9[itype][jtype]/r11;
-          double fc = exp(-(rc[itype][jtype]/(r - 1))*(rc[itype][jtype]/(r - 1)));
+          double fc = exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1));
           if (r <= rc[itype][jtype])
           {
               bfct = - (c6[itype][jtype]/r6 + c8[itype][jtype]/r8 + c10[itype][jtype]/r10*fc - c9[itype][jtype]/r9)*fc;
-              sg2 = sg2*fc + bfct*(pow(rc[itype][jtype],2)/pow(r - 1,3))*(2/r);
+              sg2 = sg2*fc + bfct*exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1))*(rc[itype][jtype]/r - 1)*(2*rc[itype][jtype]/pow(r,3));
 
           }
           else
@@ -248,6 +248,8 @@ void PairSilveraGoldman::compute(int eflag, int vflag)
           };
           fpair = sg1 + sg2;
           fpair *= factor_lj;
+          // Since the parameters for the SG potential are given for atomic units, convert to eV/Å and then to (kcal/mol)/Å
+          fpair *= 23.06  * 51.421;
 
           f[i][0] += delx * fpair;
           f[i][1] += dely * fpair;
@@ -258,7 +260,7 @@ void PairSilveraGoldman::compute(int eflag, int vflag)
             f[j][2] -= delz * fpair;
           };
 
-          if (eflag) evdwl = factor_lj * (afct + bfct - offset[itype][jtype]);
+          if (eflag) evdwl = factor_lj * 23.06 * 27.211 *(afct + bfct - offset[itype][jtype]);
           if (evflag) ev_tally(i, j, nlocal, newton_pair, evdwl, 0.0, fpair, delx, dely, delz);
         }
       }
@@ -282,14 +284,14 @@ double PairSilveraGoldman::single(int /*i*/, int /*j*/, int itype, int jtype, do
     r10 = r9*r;
     r11 = r10*r;
     r12 = r11*r;
-    sg1 = exp(alpha[itype][jtype] - sigma[itype][jtype]*r - gamma[itype][jtype]*r*r)*(sigma[itype][jtype]/r + 2*gamma[itype][jtype]);
-    afct = exp(-gamma[itype][jtype]*r*r - sigma[itype][jtype]*r + alpha[itype][jtype]);
+    sg1 = exp(alpha[itype][jtype] - beta[itype][jtype]*r - gamma[itype][jtype]*r*r)*(beta[itype][jtype]/r + 2*gamma[itype][jtype]);
+    afct = exp(-gamma[itype][jtype]*r*r - beta[itype][jtype]*r + alpha[itype][jtype]);
     sg2 = -6*c6[itype][jtype]/r8 - 8*c8[itype][jtype]/r10 - 10*c10[itype][jtype]/r12 + 9*c9[itype][jtype]/r11;
-    double fc = exp(-(rc[itype][jtype]/(r - 1))*(rc[itype][jtype]/(r - 1)));
+    double fc = exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1));
     if (r <= rc[itype][jtype])
     {
         bfct = - (c6[itype][jtype]/r6 + c8[itype][jtype]/r8 + c10[itype][jtype]/r10*fc - c9[itype][jtype]/r9)*fc;
-        sg2 = sg2*fc + bfct*(pow(rc[itype][jtype],2)/pow(r - 1,3))*(2/r);
+        sg2 = sg2*fc + bfct*exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1))*(rc[itype][jtype]/r - 1)*(2*rc[itype][jtype]/pow(r,3));
 
     }
     else
@@ -300,8 +302,10 @@ double PairSilveraGoldman::single(int /*i*/, int /*j*/, int itype, int jtype, do
     };
     fpair = sg1 + sg2;
 
-    fforce = factor_lj * fpair;
-    return factor_lj * (afct + bfct - offset[itype][jtype]);
+    fforce = factor_lj *fpair;
+    // Since the parameters for the SG potential are given for atomic units, convert to eV/Å and then to (kcal/mol)/Å
+    fforce *= 23.06  * 51.421;
+    return factor_lj * 23.06 * 27.211 *(afct + bfct - offset[itype][jtype]);
     }
 
     /* ----------------------------------------------------------------------
@@ -318,7 +322,7 @@ void PairSilveraGoldman::write_restart(FILE *fp)
       fwrite(&setflag[i][j], sizeof(int), 1, fp);
       if (setflag[i][j]) {
         fwrite(&alpha[i][j], sizeof(double), 1, fp);
-        fwrite(&sigma[i][j], sizeof(double), 1, fp);
+        fwrite(&beta[i][j], sizeof(double), 1, fp);
         fwrite(&gamma[i][j], sizeof(double), 1, fp);
         fwrite(&c6[i][j], sizeof(double), 1, fp);
         fwrite(&c8[i][j], sizeof(double), 1, fp);
@@ -362,7 +366,7 @@ void PairSilveraGoldman::read_restart(FILE *fp)
       if (setflag[i][j]) {
         if (me == 0) {
             utils::sfread(FLERR, &alpha[i][j], sizeof(double), 1, fp, nullptr, error);
-            utils::sfread(FLERR, &sigma[i][j], sizeof(double), 1, fp, nullptr, error);
+            utils::sfread(FLERR, &beta[i][j], sizeof(double), 1, fp, nullptr, error);
             utils::sfread(FLERR, &gamma[i][j], sizeof(double), 1, fp, nullptr, error);
             utils::sfread(FLERR, &c6[i][j], sizeof(double), 1, fp, nullptr, error);
             utils::sfread(FLERR, &c8[i][j], sizeof(double), 1, fp, nullptr, error);
@@ -372,7 +376,7 @@ void PairSilveraGoldman::read_restart(FILE *fp)
             utils::sfread(FLERR, &cut[i][j], sizeof(double), 1, fp, nullptr, error);
         }
         MPI_Bcast(&alpha[i][j], 1, MPI_DOUBLE, 0, world);
-        MPI_Bcast(&sigma[i][j], 1, MPI_DOUBLE, 0, world);
+        MPI_Bcast(&beta[i][j], 1, MPI_DOUBLE, 0, world);
         MPI_Bcast(&gamma[i][j], 1, MPI_DOUBLE, 0, world);
         MPI_Bcast(&c6[i][j], 1, MPI_DOUBLE, 0, world);
         MPI_Bcast(&c8[i][j], 1, MPI_DOUBLE, 0, world);
@@ -408,7 +412,7 @@ void PairSilveraGoldman::read_restart_settings(FILE *fp)
 void PairSilveraGoldman::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
-    fprintf(fp, "%d %g %g %g %g %g %g %g %g\n", i, alpha[i][i], sigma[i][i], gamma[i][i], c6[i][i], c8[i][i], c9[i][i], c10[i][i], rc[i][i]);
+    fprintf(fp, "%d %g %g %g %g %g %g %g %g\n", i, alpha[i][i], beta[i][i], gamma[i][i], c6[i][i], c8[i][i], c9[i][i], c10[i][i], rc[i][i]);
 }
 
 /* ----------------------------------------------------------------------
@@ -419,7 +423,7 @@ void PairSilveraGoldman::write_data_all(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
     for (int j = i; j <= atom->ntypes; j++)
-      fprintf(fp, "%d %d %g %g %g %g %g %g %g %g %g\n", i, j, alpha[i][i], sigma[i][i], gamma[i][i], c6[i][i], c8[i][i], c9[i][i], c10[i][i], rc[i][i], cut[i][j]);
+      fprintf(fp, "%d %d %g %g %g %g %g %g %g %g %g\n", i, j, alpha[i][i], beta[i][i], gamma[i][i], c6[i][i], c8[i][i], c9[i][i], c10[i][i], rc[i][i], cut[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -428,7 +432,7 @@ void *PairSilveraGoldman::extract(const char *str, int &dim)
 {
     dim = 2;
     if (strcmp(str, "alpha") == 0) return (void *) alpha;
-    if (strcmp(str, "sigma") == 0) return (void *) sigma;
+    if (strcmp(str, "beta") == 0) return (void *) beta;
     if (strcmp(str, "gamma") == 0) return (void *) gamma;
     if (strcmp(str, "c6") == 0) return (void *) c6;
     if (strcmp(str, "c8") == 0) return (void *) c8;

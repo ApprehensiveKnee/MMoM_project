@@ -1,0 +1,51 @@
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: PARM.lammps
+#//     File Type: LAMMPS input script
+#//     Description: This script defines the parameters for the simulation of hydrogen absorption in graphite platelets.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-27
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+mass 2 2.016 # For now at least, in accordance with the paper by Wang and Johnson, 
+             # 1998, the hydrogen atoms are regarded as simple spherical atoms
+
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+pair_coeff 1 1 lj/cut 0.066 3.4
+bond_coeff 1 469 1.4   
+angle_coeff 1 63 120           
+dihedral_coeff 1 0 7.25 0 0
+improper_coeff 1 5 180 
+special_bonds lj 0.0 0.0 0.5
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+variable alpha equal 1.713          #|
+variable sigma equal 1.567          #|
+variable gamma equal 0.00993        #|
+variable c6 equal 12.14             #|      The parameters are all in atomic units, the conversion to kcal/mol
+variable c8 equal 215.2             #|      is performed in the pair_sg.cpp file
+variable c9 equal 143.1             #|
+variable c10 equal 4813.9           #|
+variable rc equal 8.321             #|
+pair_coeff 2 2 sg ${alpha} ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} # H-H potentials
+#pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 # H-H potentials
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+variable sigma_CC equal 3.43 # Å
+variable sigma_HH equal 3.075 # Å
+variable sigma_CH_geo equal sqrt(${sigma_CC}*${sigma_HH}) # Å
+variable sigma_CH_arit equal 0.5*(${sigma_CC}+${sigma_HH}) # Å 
+
+variable P_par equal 0.57 # Å^3
+variable P_perp equal 1.995 # Å^3
+variable P_h equal 0.81 # Å^3
+variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
+variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
+
+variable epsilon equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
+
+pair_coeff 1 2 cb ${epsilon} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential 
+#pair_coeff 1 2 lj/cut 0.3025 2.065
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////

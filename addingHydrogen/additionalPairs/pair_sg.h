@@ -48,7 +48,7 @@ public:
 protected:
     double cut_global;
     double **cut;
-    double **alpha, **sigma, **gamma;
+    double **alpha, **beta, **gamma;
     double **c6, **c8, **c10, **c9;
     double **rc;
     double **offset;
