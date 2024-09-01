@@ -6,12 +6,12 @@
 
 
 &control
-   title           = "4H2_absorption_C" 
+   title           = "3H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/4h2_abs' 
-   pseudo_dir      = '/home/edoardocabiati/.burai/.pseudopot' 
-   prefix          = '4H2abs_C' 
+   outdir          = '../results/server/3h2_abs' 
+   pseudo_dir      = '../../potentials' 
+   prefix          = '3H2abs_C' 
     tstress         = .true 
     tprnfor         = .true 
 /
@@ -19,7 +19,7 @@
     a     =  4.23342e+00
     c     =  8.40848e+00
     ibrav = 4
-    nat   = 32
+    nat   = 30
     ntyp  = 2
     ecutwfc = 40.0,
     ecutrho = 400.0,
@@ -74,8 +74,10 @@ ATOMIC_POSITIONS {crystal}
     H                0.3191362001        0.7414020406        0.6798188714
     H                0.3504608912        0.5945419402        0.6799851538
     H                0.9075456144        0.7578004894        0.6800109584
-    H                0.7610867033        0.5787686886        0.6790383945 
-    H                0.270000            0.200000            0.620000
-    H                0.410000            0.210000            0.620000           
+    H                0.7610867033        0.5787686886        0.6790383945
 K_POINTS {automatic}
     1 1 1 0 0 0 
+
+
+    
+

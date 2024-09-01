@@ -1,0 +1,81 @@
+! NOTE THE MAJOR DIFFERENCE WITH RESPECT TO HYDROGEN ABSORPTION (1 MOLECULE):
+! in this case, we need to perform a constrained optimization, i.e. the carbon atoms
+! are not free to move along the xy plane -> introducing 2 molecules of H2 close together
+! implicitly made favourable a conformation for the carbon layers in which the top plane shifted
+! so to ABB stacking. This was not necessary for the single molecule simulation.
+
+
+&control
+   title           = "4H2_absorption_C" 
+   restart_mode    = 'from_scratch'
+   calculation     = 'vc-relax' 
+   outdir          = '../results/server/4h2_abs' 
+   pseudo_dir      = '../../potentials' 
+   prefix          = '4H2abs_C' 
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    a     =  4.23342e+00
+    c     =  8.40848e+00
+    ibrav = 4
+    nat   = 32
+    ntyp  = 2
+    ecutwfc = 40.0,
+    ecutrho = 400.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    !electron_maxstep=100
+    mixing_mode='local-TF'
+    mixing_beta=0.05
+    !diagonalization="cg"
+    !conv_thr=1e-6
+/
+&ions
+/
+&cell
+    !cell_factor=4
+    !cell_dofree='ibrav'
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+    H  1.00784  H.pz-rrkjus_psl.0.1.UPF
+ATOMIC_POSITIONS {crystal}
+    C                0.0000272666       -0.0000368471        0.1808875686    0   0   1
+    C                0.0000077880        0.0000015854        0.4241871497    0   0   1
+    C                0.0000017661       -0.0000040684        0.8585124580    0   0   1
+    C                0.1666621945        0.3332990686        0.1765580573    0   0   1
+    C                0.3333667492        0.1666480377        0.4285866317    0   0   1
+    C                0.1666877856        0.3333337596        0.8594257292    0   0   1
+    C                0.5000363530       -0.0000139609        0.1812044986    0   0   1
+    C                0.5000436614       -0.0000179686        0.4239808996    0   0   1
+    C                0.5000008275        0.0000126148        0.8589695406    0   0   1
+    C                0.6666934171        0.3333074181        0.1765992714    0   0   1
+    C                0.8333697962        0.1666518883        0.4261706450    0   0   1
+    C                0.6666499182        0.3333585265        0.8592844685    0   0   1
+    C                0.0000242496        0.4999894894        0.1821019601    0   0   1
+    C                0.0000148052        0.4999643238        0.4209481813    0   0   1
+    C               -0.0000157496        0.5000174446        0.8631948661    0   0   1
+    C                0.1666931056        0.8333057187        0.1766402534    0   0   1
+    C                0.3333717097        0.6666525204        0.4261902156    0   0   1
+    C                0.1666448081        0.8333400236        0.8596643407    0   0   1
+    C                0.5000269510        0.4999697347        0.1809078863    0   0   1
+    C                0.5000106069        0.4999924092        0.4241171243    0   0   1
+    C                0.5000002272        0.5000037443        0.8587218881    0   0   1
+    C                0.6667043260        0.8333117262        0.1805590646    0   0   1
+    C                0.8333280471        0.6666668985        0.4261460374    0   0   1
+    C                0.6666761386        0.8333345719        0.8634630761    0   0   1
+    H                0.9210649336        1.1803861012        0.6796128893
+    H                0.7444903755        1.1533441360        0.6803776687
+    H                0.3191362001        0.7414020406        0.6798188714
+    H                0.3504608912        0.5945419402        0.6799851538
+    H                0.9075456144        0.7578004894        0.6800109584
+    H                0.7610867033        0.5787686886        0.6790383945 
+    H                0.270000            0.200000            0.620000
+    H                0.410000            0.210000            0.620000           
+K_POINTS {automatic}
+    1 1 1 0 0 0 

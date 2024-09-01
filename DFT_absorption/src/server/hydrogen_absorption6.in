@@ -1,0 +1,86 @@
+! NOTE THE MAJOR DIFFERENCE WITH RESPECT TO HYDROGEN ABSORPTION (1 MOLECULE):
+! in this case, we need to perform a constrained optimization, i.e. the carbon atoms
+! are not free to move along the xy plane -> introducing 2 molecules of H2 close together
+! implicitly made favourable a conformation for the carbon layers in which the top plane shifted
+! so to ABB stacking. This was not necessary for the single molecule simulation.
+
+
+&control
+   title           = "6H2_absorption_C" 
+   restart_mode    = 'from_scratch'
+   calculation     = 'vc-relax' 
+   outdir          = '../results/server/6h2_abs' 
+   pseudo_dir      = '../../potentials' 
+   prefix          = '6H2abs_C' 
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    a     =  4.23342e+00
+    c     =  8.40848e+00
+    ibrav = 4
+    nat   = 36
+    ntyp  = 2
+    ecutwfc = 40.0,
+    ecutrho = 400.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    !electron_maxstep=100
+    mixing_mode='local-TF'
+    mixing_beta=0.05
+    !diagonalization="cg"
+    !conv_thr=1e-6
+/
+&ions
+/
+&cell
+    !cell_factor=4
+    !cell_dofree='ibrav'
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+    H  1.00784  H.pz-rrkjus_psl.0.1.UPF
+ATOMIC_POSITIONS {crystal}
+C               -0.0001008451       -0.0001080351        0.1828456382    0   0   1
+C                0.0001469010        0.0001563448        0.4037239413    0   0   1
+C               -0.0004465964       -0.0004852453        0.8819215500    0   0   1
+C                0.1666042513        0.3333268596        0.1778927901    0   0   1
+C                0.3334814408        0.1667610008        0.4097209119    0   0   1
+C                0.1665526290        0.3334244615        0.8785835768    0   0   1
+C                0.5000750124        0.0001015830        0.1801122968    0   0   1
+C                0.5001263026        0.0000214590        0.4084142418    0   0   1
+C                0.4997915877       -0.0002293090        0.8773244637    0   0   1
+C                0.6666651532        0.3333200085        0.1784048492    0   0   1
+C                0.8334788753        0.1667244398        0.4102422531    0   0   1
+C                0.6664957195        0.3332677890        0.8835489859    0   0   1
+C                0.0000085266        0.4999183753        0.1820364727    0   0   1
+C                0.0001841961        0.5000537884        0.4069342267    0   0   1
+C                0.0000399826        0.5001833028        0.8850938226    0   0   1
+C                0.1666294594        0.8331999589        0.1785547119    0   0   1
+C                0.3335998475        0.6667707930        0.4104609582    0   0   1
+C                0.1666110989        0.8332276002        0.8849677773    0   0   1
+C                0.4999232746        0.4999348981        0.1832972282    0   0   1
+C                0.5002764653        0.5002265261        0.4036824046    0   0   1
+C                0.4998666371        0.5001152770        0.8825472269    0   0   1
+C                0.6666699544        0.8334597295        0.1773802637    0   0   1
+C                0.8334777702        0.6667236590        0.4086850174    0   0   1
+C                0.6662905885        0.8330008833        0.8826408812    0   0   1
+H                0.8270572603        1.3378824270        0.6460576052
+H                0.8373898346        1.1708423563        0.6699639333
+H                0.4078014459        0.6683329986        0.6612770339
+H                0.6559254858        0.7086155820        0.6403929530
+H                0.7938046330        0.5378255818        0.6476334950
+H                0.5542142090        0.4521150577        0.6440575811
+H                0.1830525796        0.0635055329        0.6512188282
+H                0.3513058621        0.2471025427        0.6634429124
+H                0.0429123255        0.7068094070        0.6455031382
+H                0.2405473342        0.6836027660        0.6615671538
+H                0.9476759739        0.8545325013        0.6426201777
+H                0.7909079106        0.9526030960        0.6409032846
+
+K_POINTS {automatic}
+    1 1 1 0 0 0 

@@ -1,8 +1,8 @@
 &control
     calculation = 'relax'
     prefix = 'h2'
-    outdir = '../results/h2' 
-    pseudo_dir = '/home/edoardocabiati/.burai/.pseudopot'
+    outdir = '../results/server/h2' 
+    pseudo_dir = '../../potentials'
 /
 &system
     ibrav=1, celldm(1) =20, ! big box, to avoid interaction with other molecules

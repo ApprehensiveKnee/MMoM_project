@@ -1,0 +1,63 @@
+&control
+    calculation = "vc-relax",
+    prefix = "graphene",
+    outdir = "../results/remote/graphene",
+    pseudo_dir = "/home/edoardocabiati/.burai/.pseudopot"
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    a     =  4.23342e+00
+    c     =  8.46684e+00
+    ibrav = 4
+    nat   = 24
+    ntyp  = 1
+    ecutwfc = 40.0,
+    ecutrho = 400.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    !electron_maxstep=100
+    mixing_mode='TF'
+    mixing_beta=0.05
+    !diagonalization="cg"
+    !conv_thr=1e-6
+/
+&ions
+/
+&cell
+    !cell_factor=4
+    !cell_dofree='ibrav'
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+ATOMIC_POSITIONS {crystal}
+    C       0.000000   0.000000   0.166666 0 0 1
+    C       0.000000   0.000000   0.500000 0 0 1
+    C       0.000000   0.000000   0.833333 0 0 1
+    C       0.166666   0.333333   0.166666 0 0 1
+    C       0.333333   0.166666   0.500000 0 0 1
+    C       0.166666   0.333333   0.833333 0 0 1
+    C       0.500000   0.000000   0.166666 0 0 1
+    C       0.500000   0.000000   0.500000 0 0 1
+    C       0.500000   0.000000   0.833333 0 0 1
+    C       0.666666   0.333333   0.166666 0 0 1
+    C       0.833333   0.166666   0.500000 0 0 1
+    C       0.666666   0.333333   0.833333 0 0 1
+    C       0.000000   0.500000   0.166666 0 0 1
+    C       0.000000   0.500000   0.500000 0 0 1
+    C       0.000000   0.500000   0.833333 0 0 1
+    C       0.166666   0.833333   0.166666 0 0 1
+    C       0.333333   0.666666   0.500000 0 0 1
+    C       0.166666   0.833333   0.833333 0 0 1
+    C       0.500000   0.500000   0.166666 0 0 1
+    C       0.500000   0.500000   0.500000 0 0 1
+    C       0.500000   0.500000   0.833333 0 0 1
+    C       0.666666   0.833333   0.166666 0 0 1
+    C       0.833333   0.666666   0.500000 0 0 1
+    C       0.666666   0.833333   0.833333 0 0 1
+K_POINTS automatic
+    1 1 1 0 0 0 
