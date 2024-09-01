@@ -1,0 +1,69 @@
+
+# --- log file ---
+variable name string absorption_pot
+log ./logs/log.${name}
+# --- log file ---
+
+variable pre equal 112 # desired pressure (Atm)
+variable tem equal 300 # desired temperature (K)
+
+variable k1 equal 0.5 # spring constant
+variable k2 equal 10 # spring constant
+
+units real
+atom_style molecular
+boundary p p p
+neighbor 1.0 bin
+neigh_modify delay 3 one 6000
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
+# *--* C-C parameters *--*
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+# *--* C-C parameters *--*
+
+
+# 2. Read the graphite platelet data file and define potentials parameters
+read_data       ../geometry/carbonPlatelets/simulation_data/abpot_sys.data  extra/atom/types 1
+include         PARM.lammps
+
+# 3. Add a single hydrogen atom to the system, close to the center of the first platelet
+create_atoms    2 single 0 0 -2
+
+group           C type 1
+group           H2 type 2
+
+# 4. Equilibration
+timestep        0.05
+fix             mytth1 C spring/self ${k2} # Apply a spring force to the carbon atoms
+velocity        all create ${tem} 48 rot yes mom yes dist gaussian # Initialize velocities
+fix             mynpt all npt temp ${tem} ${tem} 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 # Apply NPT ensemble to the system
+
+thermo          1000
+dump            dump all atom 10000 simulation_data/absorption_pot.lammpstrj
+
+run             20000
+unfix           mynpt
+unfix           mytth1
+
+# 5. Umbrella sampling
+fix             mynvt all nvt temp ${tem} ${tem} 100
+fix             mytth1 C spring/self ${k2}
+
+variable        zave equal xcm(H2,z)
+variable        cpt loop 101
+label           loop
+variable        zdes equal  -15+0.30*(${cpt}-1)
+fix             mytth2 H2 spring tether ${k1} 5 5 ${zdes} 0
+run             10000
+fix             myat1 all ave/time 100 10 1000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
+run             50000
+unfix           myat1
+next            cpt
+jump            SELF loop
+

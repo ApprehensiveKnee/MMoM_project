@@ -1,6 +1,6 @@
 LAMMPS (27 Jun 2024)
 
 # --- log file ---
-variable name string test
+variable name string absorption_pot
 log ./logs/log.${name}
-log ./logs/log.test
+log ./logs/log.absorption_pot

@@ -8,19 +8,19 @@
 #//     Author: Edoardo Cabiati
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+variable realistic equal "-1"
 variable name string generate_platelets
-log log.${name}
+log simulation_data/log.${name}
 
 
-units           metal                 # Use 'metal' units (suitable for carbon structures)
+units           real                  # Real units: Angstroms, femtoseconds, kcal/mol
 dimension       3                     # 3D simulation
-atom_style      molecular                  # Define the atom style (full for compatibility with later simulations)
+atom_style      molecular                  # Define the atom style
 boundary        p p p                 # No periodic boundary conditions
 pair_style lj/cut 14
 
 # ---------------------------]* C-C POTENTIALS *[----------------------------
-# Specify the bond, angle, dihedral, and improper styles for the C-C bonds (potentials)
+# Specify the bond, angle, dihedral, and improper styles for the C-C bonds (potentials) taken from the OPLS-AA force field
 bond_style harmonic
 angle_style harmonic
 dihedral_style opls
@@ -33,7 +33,7 @@ special_bonds lj 0.0 0.0 0.5
 # - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
 variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
-variable        H equal "15"         # Define the out-of-plane dimension
+variable        H equal "30"         # Define the out-of-plane dimension
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
 if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'" &
     "quit"
@@ -41,7 +41,7 @@ if "${H} == 9" then "variable max_layers equal 4."  &
                     "variable Lz equal 18" &
                     "print 'Importing platelet_n4.data'" &
                     "read_data templates/platelet_n4.data" 
-if  "${H} == 15" then "variable max_layers equal 2." &
+if  "${H} == 15"  then "variable max_layers equal 2." &
                     "variable Lz equal 15" &
                     "print 'Importing platelet_n2.data'" &
                     "read_data templates/platelet_n2.data" 
@@ -85,8 +85,6 @@ variable        a loop ${max_layers}
     region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
     group       ${groups} region ${regions}
     displace_atoms ${groups} move 0 0 ${quote} units box
-
-
 # Next iteration
 next            a
 next            regions
@@ -96,56 +94,77 @@ jump            SELF setup_loop
 change_box      all x final -${Lx} ${Lx} y final -${Ly} ${Ly} z final -${Lz} ${Lz} units box
 reset_atoms     id sort yes
 
-# Define the atoms in the outer part of each platelet which will be fixed
-variable        L_min equal 11.5
-region          rfix_out block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side out
-region          rfix_in block -${L_min} ${L_min} -${L_min} ${L_min} -${L_min} ${L_min} units box side in
-group           fix_carbons region rfix_out
-group           mob_carbons region rfix_in
-
-
 
 # *****************************      EQUILIBRATION RUN      ******************************
 
-thermo 50
+thermo 500
 thermo_style custom step pe ke etotal temp lx ly lz press atoms
-timestep .001
+timestep 1
 
 # Minimize at 0K will likely not be necessary, so we skip it
 
-# Heat the system to the desired temperature
+# Start from hight temperature and cool down the system
 variable        T equal 298
-variable        Tstart equal 500
-velocity        mob_carbons create ${Tstart} 48455 mom yes rot yes # give initial velocities to the inner atoms
-compute         Tmob mob_carbons temp
-fix             nvt1 mob_carbons nvt temp ${Tstart} ${T} $(125.0*dt)
-fix_modify      nvt1 temp Tmob
+variable        Tstart equal 600
+if "${realistic} ==-1" then "dump final_dump all atom 100 simulation_data/final.lammpstrj" &
+                            "jump SELF equilibration"
+velocity        all create ${Tstart} 48455 mom yes rot yes # give initial velocities to the inner atoms
+fix             nvt1 all nvt temp ${Tstart} ${T} $(125.0*dt)
 # Set up the output files schema
-fix             myat1 all ave/time 10 100 1000 c_Tmob file temperature_inner.dat
-# fix           myat2 all ave/time 10 100 1000 vol lx ly lz file dimensions.dat
-# fix           myat3 all ave/time 10 100 1000 pe file potential_energy.dat
+variable myvol equal vol
+variable mylx equal lx
+variable myly equal ly
+variable mylz equal lz
+variable mypot equal pe
+variable mytemp equal temp
+fix           myat1 all ave/time 10 10 100 v_mytemp file simulation_data/temperature_inner.dat
+fix           myat2 all ave/time 10 10 100 v_myvol v_mylx v_myly v_mylz file simulation_data/dimensions.dat
+fix           myat3 all ave/time 10 10 100 v_mypot file simulation_data/potential_energy.dat
 
+if "${realistic} ==0" then "fix myspr all spring/self 5" &
+                           "jump SELF spring_nvt "
 
-# Fix the motion of the outer carbons
-fix             sf fix_carbons setforce 0.0 0.0 0.0
-velocity        fix_carbons set 0.0 0.0 0.0
+# To avoid the planes of the platelets movement during the simulation, fix thier CM and momentums
+label           fix_loop
+variable        groups delete
+variable        groups index grp_1 grp_2 grp_3 grp_4
+variable        b loop ${max_layers}
+    print       "${b}"
+    print       "${groups}"
+    variable    quote0 equal 3.35*(v_b-1)
+    variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($b-1)
+    #fix         recenter_fix_${b} ${groups} recenter NULL NULL INIT units box
+    fix         momentum_fix_${b} ${groups} momentum  100 linear 0 0 1 angular rescale   
+next            b
+next            groups
+jump            SELF fix_loop
 
-dump            final_dump all atom 1 final.lammpstrj
-thermo_modify temp Tmob
+label           spring_nvt
+dump            final_dump all atom 100 simulation_data/final.lammpstrj
+run 10000
+if "${realistic} ==0" then "jump SELF equilibration"
 
-run 1000
 unfix           nvt1
+label           unfix_loop
+variable        groups delete
+variable        groups index grp_1 grp_2 grp_3 grp_4
+variable        c loop ${max_layers}
+    #unfix       recenter_fix_${c}
+    unfix       momentum_fix_${c}
+next            c
+next            groups
+jump            SELF unfix_loop
 
 # After the NVT run, run a batch of minimiazation steps.
-minimize 1.0e-4 1.0e-6 10 10
-velocity        mob_carbons create ${T} 123456 dist gaussian
-run 50
-minimize 1.0e-4 1.0e-6 10 10
-velocity        mob_carbons create ${T} 1234567 dist gaussian
-run 50
-minimize 1.0e-4 1.0e-6 10 10
-velocity        mob_carbons create ${T} 12345678 dist gaussian
-run 50
+label           equilibration
+minimize        1.0e-4 1.0e-6 10 10
+velocity        all create ${T} 123456 dist gaussian
+run 500
+minimize        1.0e-4 1.0e-6 10 10
+velocity        all create ${T} 1234567 dist gaussian
+run 500
+minimize        1.0e-4 1.0e-6 10 10
+velocity        all create ${T} 12345678 dist gaussian
+run 500
 
-
-write_data      final.data nocoeff nofix
+write_data      simulation_data/final.data nocoeff nofix

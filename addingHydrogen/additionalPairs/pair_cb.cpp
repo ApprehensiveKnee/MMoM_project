@@ -148,7 +148,7 @@ void PairCrowellBrown::compute(int eflag, int vflag)
     double xtmp, ytmp, ztmp, delx, dely, delz, evdwl, fpair_xy, fpair_z, fpair;
     double rsq, r, dr, factor_lj, afct, bfct;
     double cb1, cb2, cb3;
-    double theta;
+    double cos_theta;
     int *ilist, *jlist, *numneigh, **firstneigh;
 
     evdwl = 0.0;
@@ -207,17 +207,17 @@ void PairCrowellBrown::compute(int eflag, int vflag)
                 //                | V \
                 //               theta angle
 
-                theta = delz/r;
+                cos_theta = delz/r;
                 // The Crowell-Brown potential is defined as:
-                // V_CB(r) = 4*epsilon_CB*{(sigma_CB/r)^12 - (sigma_CB/r)^6*[3*(P_par-P_perp)*cos^2(theta) + (P_par + 5*P_perp)]/[4*P_par + 2*P_perp]}
+                // V_CB(r) = epsilon_CB*{(sigma_CB/r)^12 - (sigma_CB/r)^6*[3*(P_par-P_perp)*cos^2(theta) + (P_par + 5*P_perp)]/[4*P_par + 2*P_perp]}
                 afct = pow(sigma[itype][jtype] / r, 12);
-                bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos(theta) * cos(theta) + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
+                bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
                 cb1 = afct*12/(r*r);
                 cb2 = bfct*6/(r*r);
-                cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*cos(theta)*sin(theta)/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
+                cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
 
-                fpair_xy = 4 * epsilon[itype][jtype] * (cb1 + cb2 + cb3*delz);
-                fpair_z = 4 * epsilon[itype][jtype] * (cb1*delz + cb2*delz - cb3*(r*r-delz*delz));
+                fpair_xy = epsilon[itype][jtype] * (cb1 + cb2 - cb3*delz);
+                fpair_z = epsilon[itype][jtype] * (cb1*delz + cb2*delz + cb3*(r*r-delz*delz));
                 fpair_xy *= factor_lj;
                 fpair_z *= factor_lj;
                 fpair = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2))/r;
@@ -236,8 +236,8 @@ void PairCrowellBrown::compute(int eflag, int vflag)
                 {
                   // Compute the offset for each pair of atoms if needed
                   double cut_ij = sqrt(cutsq[itype][jtype]);
-                  double offset = (pow(sigma[itype][jtype]/cut_ij, 12) - pow(sigma[itype][jtype]/cut_ij, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos(theta) * cos(theta) + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
-                  evdwl = factor_lj * 4 * epsilon[itype][jtype] *(afct + bfct - offset);
+                  double offset = (pow(sigma[itype][jtype]/cut_ij, 12) - pow(sigma[itype][jtype]/cut_ij, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
+                  evdwl = factor_lj * epsilon[itype][jtype] *(afct + bfct - offset);
                 }
                 
                 if (evflag) ev_tally(i, j, nlocal, newton_pair, evdwl, 0.0, fpair, delx, dely, delz);
@@ -253,7 +253,7 @@ double PairCrowellBrown::single(int i, int j, int itype, int jtype, double rsq,
                              double /*factor_coul*/, double factor_lj, double &fforce)
 {
     double delx, dely, delz;
-    double r, theta, fpair_xy, fpair_z;
+    double r, cos_theta, fpair_xy, fpair_z;
     double afct, bfct;
     double cb1, cb2, cb3;
 
@@ -265,23 +265,23 @@ double PairCrowellBrown::single(int i, int j, int itype, int jtype, double rsq,
     delz = x[i][2] - x[j][2];
 
     //Compute the angle between the vector connecting the two atoms and the z-axis
-    theta = delz/r;
+    cos_theta = delz/r;
 
     afct = pow(sigma[itype][jtype] / r, 12);
-    bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos(theta) * cos(theta) + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
+    bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
     cb1 = afct*12/(r*r);
     cb2 = bfct*6/(r*r);
-    cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*cos(theta)*sin(theta)/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
+    cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
 
-    fpair_xy = 4 * epsilon[itype][jtype] * (cb1 + cb2 + cb3*delz);
-    fpair_z = 4 * epsilon[itype][jtype] * (cb1*delz + cb2*delz - cb3*(r*r-delz*delz));
+    fpair_xy = epsilon[itype][jtype] * (cb1 + cb2 - cb3*delz);
+    fpair_z = epsilon[itype][jtype] * (cb1*delz + cb2*delz + cb3*(r*r-delz*delz));
     fforce = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2))/r;
     fforce *= factor_lj;
 
     // Compute the offset for each pair of atoms if needed
     double cut_ij = cut[itype][jtype];
-    double offset =(pow(sigma[itype][jtype] / cut_ij, 12) - pow(sigma[itype][jtype] / cut_ij, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos(theta) * cos(theta) + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
-    return factor_lj * (4 * epsilon[itype][jtype]*(afct + bfct - offset));
+    double offset =(pow(sigma[itype][jtype] / cut_ij, 12) - pow(sigma[itype][jtype] / cut_ij, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
+    return factor_lj * ( epsilon[itype][jtype]*(afct + bfct - offset));
     }
 
     /* ----------------------------------------------------------------------

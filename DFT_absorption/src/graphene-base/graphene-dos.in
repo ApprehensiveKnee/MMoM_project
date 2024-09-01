@@ -1,0 +1,7 @@
+! Code taken form https://github.com/pranabdas/espresso
+
+&dos
+  prefix = 'graphene-base_dos',
+  outdir = '../results/graphene-base_dos',
+  fildos = 'graphene_dos.dat'
+/
