@@ -1,7 +1,7 @@
 &control
     calculation = 'relax'
     prefix = 'h2'
-    outdir = '../results/server/h2' 
+    outdir = '../../results/server/h2' 
     pseudo_dir = '../../potentials'
 /
 &system

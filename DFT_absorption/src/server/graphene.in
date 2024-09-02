@@ -1,7 +1,7 @@
 &control
     calculation = "vc-relax",
     prefix = "graphene",
-    outdir = "../results/server/graphene",
+    outdir = "../../results/server/graphene",
     pseudo_dir = "../../potentials"
     tstress         = .true 
     tprnfor         = .true 

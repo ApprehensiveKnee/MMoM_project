@@ -9,7 +9,7 @@
    title           = "4H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/server/4h2_abs' 
+   outdir          = '../../results/server/4h2_abs' 
    pseudo_dir      = '../../potentials' 
    prefix          = '4H2abs_C' 
     tstress         = .true 
@@ -78,4 +78,4 @@ ATOMIC_POSITIONS {crystal}
     H                0.270000            0.200000            0.620000
     H                0.410000            0.210000            0.620000           
 K_POINTS {automatic}
-    1 1 1 0 0 0 
+    6 6 2 1 1 1

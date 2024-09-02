@@ -9,7 +9,7 @@
    title           = "6H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/remote/6h2_abs' 
+   outdir          = '../../results/remote/6h2_abs' 
    pseudo_dir      = '/home/edoardocabiati/.burai/.pseudopot' 
    prefix          = '6H2abs_C' 
     tstress         = .true 
@@ -83,4 +83,4 @@ H                0.9476759739        0.8545325013        0.6426201777
 H                0.7909079106        0.9526030960        0.6409032846
 
 K_POINTS {automatic}
-    1 1 1 0 0 0 
+    6 6 2 1 1 1

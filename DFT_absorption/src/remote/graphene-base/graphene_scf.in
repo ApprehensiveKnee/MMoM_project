@@ -1,7 +1,7 @@
 &control
     calculation = "scf",
     prefix = "graphene-base-scf",
-    outdir = "../results/graphene-base-scf",
+    outdir = "../../results/graphene-base-scf",
     pseudo_dir = "/home/edoardocabiati/.burai/.pseudopot"
 /
 &system

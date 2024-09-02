@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --time=02:00:00        # Walltime in hh:mm:ss
+#SBATCH --nodes=2              # Number of nodes
+#SBATCH --ntasks-per-node=48   # Number of MPI ranks per node,  max 48
+#SBATCH --cpus-per-task=1      # Number of OpenMP threads for each MPI process/rank
+#SBATCH --mem=15000           # Per nodes memory request (MB),  max mem is 375GB
+#SBATCH --partition=g100_usr_prod
+#SBATCH --job-name=graphene
+#SBATCH --account=IscrC_AdsVTST
+
+export OMP_NUM_THREADS=1
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
+export ESPRESSO_PSEUDO=${HOME}/MMoM/MMoM_project/DFT_absorption/potentials
+
+module purge
+module load autoload
+module load profile/chem-phys
+module load qe/7.2
+
+export SLURM_CPU_BIND_VERBOSE=yes
+
+srun -n 96 pw.x -i hydrogen_absorption8.in > ../../results/server/8h2_abs/h2_absoprtion_k.out
+

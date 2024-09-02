@@ -9,7 +9,7 @@
    title           = "8H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/server/8h2_abs' 
+   outdir          = '../../results/server/8h2_abs' 
    pseudo_dir      = '../../potentials' 
    prefix          = '8H2abs_C' 
     tstress         = .true 
@@ -92,4 +92,4 @@ H                0.5738355696        0.8213284544        0.5417858901
 
 
 K_POINTS {automatic}
-    1 1 1 0 0 0 
+    6 6 2 1 1 1

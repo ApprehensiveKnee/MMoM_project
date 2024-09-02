@@ -9,7 +9,7 @@
    title           = "7H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/server/7h2_abs' 
+   outdir          = '../../results/server/7h2_abs' 
    pseudo_dir      = '../../potentials' 
    prefix          = '7H2abs_C' 
     tstress         = .true 
@@ -89,4 +89,4 @@ H                0.0280498948        0.2565330701        0.6427383854
 H                0.2640300736        0.4486070231        0.6441442481
 
 K_POINTS {automatic}
-    1 1 1 0 0 0 
+     6 6 2 1 1 1
