@@ -74,7 +74,7 @@ ATOMIC_POSITIONS {crystal}
     H       0.265000   0.680000   0.670000
     H       0.395000   0.628000   0.680000
 K_POINTS {automatic}
-    1 1 1 0 0 0 
+    6 6 2 1 1 1
 
 
     

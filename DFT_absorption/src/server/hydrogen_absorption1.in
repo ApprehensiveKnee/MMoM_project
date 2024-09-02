@@ -1,5 +1,5 @@
 &control
-   title           = "H2_absorption_C" 
+   title           = "1H2_absorption_C" 
    calculation     = 'vc-relax' 
    outdir          = '../../results/server/1h2_abs' 
    pseudo_dir      = '../../potentials' 
@@ -63,6 +63,6 @@ ATOMIC_POSITIONS {crystal}
     C       0.666666   0.833333   0.833333
     H       0.680000   0.75000   0.620000
     H       0.680000   0.90000   0.620000
-K_POINTS automatic
-    1 1 1 0 0 0 
+K_POINTS {automatic}
+    6 6 2 1 1 1
 
