@@ -9,7 +9,7 @@
    title           = "5H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/server/5h2_abs' 
+   outdir          = '../../results/server/5h2_abs' 
    pseudo_dir      = '../../potentials' 
    prefix          = '5H2abs_C' 
     tstress         = .true 

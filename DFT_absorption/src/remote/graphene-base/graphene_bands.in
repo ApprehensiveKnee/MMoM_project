@@ -3,7 +3,7 @@
 &CONTROL
   calculation = 'bands',
   prefix      = 'graphene-base_bands',
-  outdir      = '../results/graphene-base_bands',
+  outdir      = '../../results/graphene-base_bands',
   pseudo_dir  = '/home/edoardocabiati/.burai/.pseudopot',
 /
 

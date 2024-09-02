@@ -9,7 +9,7 @@
    title           = "3H2_absorption_C" 
    restart_mode    = 'from_scratch'
    calculation     = 'vc-relax' 
-   outdir          = '../results/server/3h2_abs' 
+   outdir          = '../../results/server/3h2_abs' 
    pseudo_dir      = '../../potentials' 
    prefix          = '3H2abs_C' 
     tstress         = .true 

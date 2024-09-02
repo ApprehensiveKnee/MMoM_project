@@ -2,7 +2,7 @@
 
 &BANDS
   prefix  = 'graphene-base_bands'
-  outdir  = '../results/graphene-base_bands'
+  outdir  = '../../results/graphene-base_bands'
   filband = 'graphene_bands.dat'
   lsym = .true.,ATOMIC_SPECIES
 /

@@ -1,7 +1,7 @@
 &control
     calculation = "nscf",
     prefix = "graphene-base-nscf",
-    outdir = "../results/graphene-base-nscf",
+    outdir = "../../results/graphene-base-nscf",
     pseudo_dir = "/home/edoardocabiati/.burai/.pseudopot"
 /
 &system

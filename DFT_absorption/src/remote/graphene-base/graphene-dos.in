@@ -2,6 +2,6 @@
 
 &dos
   prefix = 'graphene-base_dos',
-  outdir = '../results/graphene-base_dos',
+  outdir = '../../results/graphene-base_dos',
   fildos = 'graphene_dos.dat'
 /

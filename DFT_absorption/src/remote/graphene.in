@@ -1,7 +1,7 @@
 &control
     calculation = "vc-relax",
     prefix = "graphene",
-    outdir = "../results/remote/graphene",
+    outdir = "../../results/remote/graphene",
     pseudo_dir = "/home/edoardocabiati/.burai/.pseudopot"
     tstress         = .true 
     tprnfor         = .true 
@@ -15,9 +15,9 @@
     ecutwfc = 40.0,
     ecutrho = 400.0,
     input_dft='LDA',
-    occupations='smearing',
-    smearing='gaussian',
-    degauss=0.01,
+    ! occupations='smearing',
+    ! smearing='gaussian',
+    ! degauss=0.01,
 /
 &electrons
     !electron_maxstep=100
