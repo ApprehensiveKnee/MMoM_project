@@ -31,7 +31,6 @@ lattice sc 3
 create_atoms 2 box ratio 0.01 428795
 lattice none 1
 # Print the number of hydrogen atoms to file and delete the overlapping hydrogen atoms generated
-
 variable hydrogen atom "type==2"
 group hydrogen dynamic all var hydrogen
 variable nH equal count(hydrogen)
