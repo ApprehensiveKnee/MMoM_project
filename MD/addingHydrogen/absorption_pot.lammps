@@ -57,7 +57,7 @@ fix             mytth1 C spring/self ${k2}
 
 variable        cpt loop 51
 label           loop
-variable        zdes equal  -15+0.30*(${cpt}-1)
+variable        zdes equal  -15+0.60*(${cpt}-1)
 variable        zave equal xcm(H2,z)
 fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
 run             10000
