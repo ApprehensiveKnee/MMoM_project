@@ -8,7 +8,7 @@ variable pre equal 112 # desired pressure (Atm)
 variable tem equal 300 # desired temperature (K)
 
 variable k1 equal 0.5 # spring constant
-variable k2 equal 10 # spring constant
+variable k2 equal 2.5 # spring constant
 
 units real
 atom_style molecular
@@ -32,7 +32,7 @@ improper_style harmonic
 read_data       ../geometry/carbonPlatelets/simulation_data/abpot_sys.data  extra/atom/types 1
 include         PARM.lammps
 
-# 3. Add a single hydrogen atom to the system, close to the center of the first platelet
+# 3. Add a single hydrogen molecule to the system, close to the center of the first platelet
 create_atoms    2 single 0 0 -2
 
 group           C type 1
@@ -45,7 +45,7 @@ velocity        all create ${tem} 48 rot yes mom yes dist gaussian # Initialize 
 fix             mynpt all npt temp ${tem} ${tem} 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 # Apply NPT ensemble to the system
 
 thermo          1000
-dump            dump all atom 10000 simulation_data/absorption_pot.lammpstrj
+dump            dump all atom 1000 simulation_data/absorption_pot.lammpstrj
 
 run             20000
 unfix           mynpt
@@ -55,11 +55,11 @@ unfix           mytth1
 fix             mynvt all nvt temp ${tem} ${tem} 100
 fix             mytth1 C spring/self ${k2}
 
-variable        zave equal xcm(H2,z)
 variable        cpt loop 101
 label           loop
 variable        zdes equal  -15+0.30*(${cpt}-1)
-fix             mytth2 H2 spring tether ${k1} 5 5 ${zdes} 0
+variable        zave equal xcm(H2,z)
+fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
 run             10000
 fix             myat1 all ave/time 100 10 1000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
 run             50000
