@@ -55,13 +55,13 @@ unfix           mytth1
 fix             mynvt all nvt temp ${tem} ${tem} 100
 fix             mytth1 C spring/self ${k2}
 
-variable        cpt loop 101
+variable        cpt loop 51
 label           loop
 variable        zdes equal  -15+0.30*(${cpt}-1)
 variable        zave equal xcm(H2,z)
 fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
 run             10000
-fix             myat1 all ave/time 100 10 1000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
+fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
 run             50000
 unfix           myat1
 next            cpt
