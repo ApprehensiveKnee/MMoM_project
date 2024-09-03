@@ -7,7 +7,7 @@ log ./logs/log.${name}
 variable pre equal 112 # desired pressure (Atm)
 variable tem equal 300 # desired temperature (K)
 
-variable k1 equal 6 # spring constant
+variable k1 equal 5.2 # spring constant
 variable k2 equal 3.5 # spring constant
 
 units real
