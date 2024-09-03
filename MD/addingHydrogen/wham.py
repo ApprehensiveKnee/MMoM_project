@@ -1,7 +1,7 @@
 
 import os
 
-k=2.5
+k=3
 folder='simulation_data/abpot/'
 
 f = open("simulation_data/metadata.dat", "w")
