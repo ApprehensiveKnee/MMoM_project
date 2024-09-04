@@ -9,6 +9,7 @@
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 variable realistic equal "-1"
+variable tests equal "0"
 variable name string generate_platelets
 log simulation_data/log.${name}
 
@@ -33,8 +34,14 @@ special_bonds lj 0.0 0.0 0.5
 # - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
 variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
-variable        H equal "30"         # Define the out-of-plane dimension
+variable        H equal "15"         # Define the out-of-plane dimension
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
+if "${tests}==1" then "variable max_layers equal 2." &
+                    "variable H equal 15" &
+                    "variable Lz equal 15" &
+                    "print 'Importing restricted.data'" &
+                    "read_data templates/restricted.data" & 
+                    "jump SELF done_test"
 if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'" &
     "quit"
 if "${H} == 9" then "variable max_layers equal 4."  &  
@@ -53,7 +60,7 @@ if "${H} == 60" then "variable max_layers equal 1." &
                     "variable Lz equal 30" &
                     "print 'Importing platelet_n1.data'" &
                     "read_data templates/platelet_n1.data"
-                    
+label done_test            
 
 
 # ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
@@ -95,6 +102,7 @@ change_box      all x final -${Lx} ${Lx} y final -${Ly} ${Ly} z final -${Lz} ${L
 reset_atoms     id sort yes
 
 
+
 # *****************************      EQUILIBRATION RUN      ******************************
 
 thermo 500
@@ -106,8 +114,10 @@ timestep 1
 # Start from hight temperature and cool down the system
 variable        T equal 298
 variable        Tstart equal 600
-if "${realistic} ==-1" then "dump final_dump all atom 100 simulation_data/final.lammpstrj" &
-                            "jump SELF equilibration"
+if "${realistic} ==-1 && ${tests}==0" then "dump final_dump all atom 100 simulation_data/final.lammpstrj" &
+                                    "jump SELF equilibration"
+if "${realistic} ==-1 && ${tests}==1" then "dump final_dump all atom 100 simulation_data/test.lammpstrj" &
+                                    "jump SELF equilibration"                  
 velocity        all create ${Tstart} 48455 mom yes rot yes # give initial velocities to the inner atoms
 fix             nvt1 all nvt temp ${Tstart} ${T} $(125.0*dt)
 # Set up the output files schema
@@ -140,7 +150,10 @@ next            groups
 jump            SELF fix_loop
 
 label           spring_nvt
+if "${tests}==1" then "dump final_dump all atom 100 simulation_data/test.lammpstrj" &
+                        "jump SELF skip_dump"
 dump            final_dump all atom 100 simulation_data/final.lammpstrj
+label           skip_dump
 run 10000
 if "${realistic} ==0" then "jump SELF equilibration"
 
@@ -167,4 +180,6 @@ minimize        1.0e-4 1.0e-6 10 10
 velocity        all create ${T} 12345678 dist gaussian
 run 500
 
+if "${tests}==1" then "write_data simulation_data/test.data nocoeff nofix" &
+                      "quit"
 write_data      simulation_data/final.data nocoeff nofix

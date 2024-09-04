@@ -22,6 +22,7 @@ variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
 variable        H equal "15"         # Define the out-of-plane dimension
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
+if "${tests}==1" then "variable max_layers equal 2."                     "variable H equal 15"                     "variable Lz equal 15"                     "print 'Importing restricted.data'"                     "read_data templates/restricted.data"                     "jump SELF done_test"
 if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'"     "quit"
 if "${H} == 9" then "variable max_layers equal 4."                      "variable Lz equal 18"                     "print 'Importing platelet_n4.data'"                     "read_data templates/platelet_n4.data"
 if  "${H} == 15"  then "variable max_layers equal 2."                     "variable Lz equal 15"                     "print 'Importing platelet_n2.data'"                     "read_data templates/platelet_n2.data"
@@ -61,10 +62,10 @@ Finding 1-2 1-3 1-4 neighbors ...
     18 = max # of 1-4 neighbors
     18 = max # of special neighbors
   special bonds CPU = 0.001 seconds
-  read_data CPU = 0.017 seconds
+  read_data CPU = 0.018 seconds
 if "${H} == 30" then "variable max_layers equal 1."                     "variable Lz equal 15"                     "print 'Importing platelet_n1.data'"                     "read_data templates/platelet_n1.data"
 if "${H} == 60" then "variable max_layers equal 1."                     "variable Lz equal 30"                     "print 'Importing platelet_n1.data'"                     "read_data templates/platelet_n1.data"
-
+label done_test
 
 
 # ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
@@ -218,6 +219,7 @@ Finding 1-2 1-3 1-4 neighbors ...
   special bonds CPU = 0.000 seconds
 
 
+
 # *****************************      EQUILIBRATION RUN      ******************************
 
 thermo 500
@@ -229,7 +231,7 @@ timestep 1
 # Start from hight temperature and cool down the system
 variable        T equal 298
 variable        Tstart equal 600
-if "${realistic} ==-1" then "dump final_dump all atom 100 simulation_data/final.lammpstrj"                             "jump SELF equilibration"
+if "${realistic} ==-1 && ${tests}==0" then "dump final_dump all atom 100 simulation_data/final.lammpstrj"                                     "jump SELF equilibration"
 dump final_dump all atom 100 simulation_data/final.lammpstrj
 jump SELF equilibration
 minimize        1.0e-4 1.0e-6 10 10
@@ -257,9 +259,9 @@ Per MPI rank memory allocation (min/avg/max) = 12.3 | 12.3 | 12.3 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
          0   19933.952      0              19933.952      0              60             60             30            -2052.1433            480 
          5   19914.638      0              19914.638      0              60             60             30            -1044.4339            480 
-Loop time of 0.00876088 on 1 procs for 5 steps with 480 atoms
+Loop time of 0.00876879 on 1 procs for 5 steps with 480 atoms
 
-99.1% CPU use with 1 MPI tasks x no OpenMP threads
+97.8% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = max force evaluations
@@ -273,13 +275,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0046059  | 0.0046059  | 0.0046059  |   0.0 | 52.57
-Bond    | 0.0037808  | 0.0037808  | 0.0037808  |   0.0 | 43.16
+Pair    | 0.0044339  | 0.0044339  | 0.0044339  |   0.0 | 50.56
+Bond    | 0.0039157  | 0.0039157  | 0.0039157  |   0.0 | 44.65
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 1.929e-05  | 1.929e-05  | 1.929e-05  |   0.0 |  0.22
+Comm    | 1.996e-05  | 1.996e-05  | 1.996e-05  |   0.0 |  0.23
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0003549  |            |       |  4.05
+Other   |            | 0.0003992  |            |       |  4.55
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -303,21 +305,21 @@ Per MPI rank memory allocation (min/avg/max) = 12.2 | 12.2 | 12.2 Mbytes
          5   19914.638      425.48679      20340.125      298            60             60             30            -864.34161            480 
        500   19914.638      425.48679      20340.125      298            60             60             30            -864.34161            480 
        505   19914.638      425.48679      20340.125      298            60             60             30            -864.34161            480 
-Loop time of 0.271367 on 1 procs for 500 steps with 480 atoms
+Loop time of 0.266711 on 1 procs for 500 steps with 480 atoms
 
-Performance: 159.194 ns/day, 0.151 hours/ns, 1842.524 timesteps/s, 884.412 katom-step/s
-98.8% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 161.973 ns/day, 0.148 hours/ns, 1874.687 timesteps/s, 899.850 katom-step/s
+98.2% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.12107    | 0.12107    | 0.12107    |   0.0 | 44.62
-Bond    | 0.14726    | 0.14726    | 0.14726    |   0.0 | 54.27
+Pair    | 0.11743    | 0.11743    | 0.11743    |   0.0 | 44.03
+Bond    | 0.1461     | 0.1461     | 0.1461     |   0.0 | 54.78
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.00071508 | 0.00071508 | 0.00071508 |   0.0 |  0.26
-Output  | 0.0014567  | 0.0014567  | 0.0014567  |   0.0 |  0.54
-Modify  | 5.9498e-05 | 5.9498e-05 | 5.9498e-05 |   0.0 |  0.02
-Other   |            | 0.0008013  |            |       |  0.30
+Comm    | 0.00080382 | 0.00080382 | 0.00080382 |   0.0 |  0.30
+Output  | 0.0014552  | 0.0014552  | 0.0014552  |   0.0 |  0.55
+Modify  | 5.7658e-05 | 5.7658e-05 | 5.7658e-05 |   0.0 |  0.02
+Other   |            | 0.000859   |            |       |  0.32
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -337,9 +339,9 @@ Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.32 | 13.32 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
        505   19914.638      425.48679      20340.125      298            60             60             30            -864.34161            480 
        506   19913.167      425.48679      20338.654      298            60             60             30            -867.9248             480 
-Loop time of 0.00282429 on 1 procs for 1 steps with 480 atoms
+Loop time of 0.00252529 on 1 procs for 1 steps with 480 atoms
 
-96.5% CPU use with 1 MPI tasks x no OpenMP threads
+99.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
@@ -353,13 +355,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.001438   | 0.001438   | 0.001438   |   0.0 | 50.92
-Bond    | 0.0011018  | 0.0011018  | 0.0011018  |   0.0 | 39.01
+Pair    | 0.0012357  | 0.0012357  | 0.0012357  |   0.0 | 48.93
+Bond    | 0.0010261  | 0.0010261  | 0.0010261  |   0.0 | 40.63
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 7.376e-06  | 7.376e-06  | 7.376e-06  |   0.0 |  0.26
+Comm    | 3.958e-06  | 3.958e-06  | 3.958e-06  |   0.0 |  0.16
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0002771  |            |       |  9.81
+Other   |            | 0.0002595  |            |       | 10.28
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -383,21 +385,21 @@ Per MPI rank memory allocation (min/avg/max) = 12.2 | 12.2 | 12.2 Mbytes
        506   19913.167      425.48679      20338.654      298            60             60             30            -867.9248             480 
       1000   19913.167      425.48679      20338.654      298            60             60             30            -867.9248             480 
       1006   19913.167      425.48679      20338.654      298            60             60             30            -867.9248             480 
-Loop time of 0.272257 on 1 procs for 500 steps with 480 atoms
+Loop time of 0.268145 on 1 procs for 500 steps with 480 atoms
 
-Performance: 158.674 ns/day, 0.151 hours/ns, 1836.502 timesteps/s, 881.521 katom-step/s
-98.9% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 161.107 ns/day, 0.149 hours/ns, 1864.661 timesteps/s, 895.037 katom-step/s
+98.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.1211     | 0.1211     | 0.1211     |   0.0 | 44.48
-Bond    | 0.14829    | 0.14829    | 0.14829    |   0.0 | 54.47
+Pair    | 0.11781    | 0.11781    | 0.11781    |   0.0 | 43.94
+Bond    | 0.14732    | 0.14732    | 0.14732    |   0.0 | 54.94
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.00073749 | 0.00073749 | 0.00073749 |   0.0 |  0.27
-Output  | 0.001255   | 0.001255   | 0.001255   |   0.0 |  0.46
-Modify  | 5.4789e-05 | 5.4789e-05 | 5.4789e-05 |   0.0 |  0.02
-Other   |            | 0.0008117  |            |       |  0.30
+Comm    | 0.00076112 | 0.00076112 | 0.00076112 |   0.0 |  0.28
+Output  | 0.0013613  | 0.0013613  | 0.0013613  |   0.0 |  0.51
+Modify  | 5.4743e-05 | 5.4743e-05 | 5.4743e-05 |   0.0 |  0.02
+Other   |            | 0.0008373  |            |       |  0.31
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -417,9 +419,9 @@ Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.32 | 13.32 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
       1006   19913.167      425.48679      20338.654      298            60             60             30            -867.9248             480 
       1007   19912.461      425.48679      20337.948      298            60             60             30            -866.42218            480 
-Loop time of 0.00277596 on 1 procs for 1 steps with 480 atoms
+Loop time of 0.00264129 on 1 procs for 1 steps with 480 atoms
 
-94.9% CPU use with 1 MPI tasks x no OpenMP threads
+98.8% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
@@ -433,13 +435,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0013864  | 0.0013864  | 0.0013864  |   0.0 | 49.94
-Bond    | 0.0011153  | 0.0011153  | 0.0011153  |   0.0 | 40.18
+Pair    | 0.001349   | 0.001349   | 0.001349   |   0.0 | 51.08
+Bond    | 0.0010344  | 0.0010344  | 0.0010344  |   0.0 | 39.16
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 9.833e-06  | 9.833e-06  | 9.833e-06  |   0.0 |  0.35
+Comm    | 3.75e-06   | 3.75e-06   | 3.75e-06   |   0.0 |  0.14
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0002645  |            |       |  9.53
+Other   |            | 0.0002541  |            |       |  9.62
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -463,21 +465,21 @@ Per MPI rank memory allocation (min/avg/max) = 12.2 | 12.2 | 12.2 Mbytes
       1007   19912.461      425.48679      20337.948      298            60             60             30            -866.42218            480 
       1500   19912.461      425.48679      20337.948      298            60             60             30            -866.42218            480 
       1507   19912.461      425.48679      20337.948      298            60             60             30            -866.42218            480 
-Loop time of 0.272893 on 1 procs for 500 steps with 480 atoms
+Loop time of 0.26766 on 1 procs for 500 steps with 480 atoms
 
-Performance: 158.304 ns/day, 0.152 hours/ns, 1832.222 timesteps/s, 879.466 katom-step/s
-98.9% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 161.399 ns/day, 0.149 hours/ns, 1868.040 timesteps/s, 896.659 katom-step/s
+98.2% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.12143    | 0.12143    | 0.12143    |   0.0 | 44.50
-Bond    | 0.14855    | 0.14855    | 0.14855    |   0.0 | 54.44
+Pair    | 0.11723    | 0.11723    | 0.11723    |   0.0 | 43.80
+Bond    | 0.14748    | 0.14748    | 0.14748    |   0.0 | 55.10
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.00073335 | 0.00073335 | 0.00073335 |   0.0 |  0.27
-Output  | 0.0013125  | 0.0013125  | 0.0013125  |   0.0 |  0.48
-Modify  | 5.5544e-05 | 5.5544e-05 | 5.5544e-05 |   0.0 |  0.02
-Other   |            | 0.0008072  |            |       |  0.30
+Comm    | 0.00074179 | 0.00074179 | 0.00074179 |   0.0 |  0.28
+Output  | 0.0013383  | 0.0013383  | 0.0013383  |   0.0 |  0.50
+Modify  | 5.3076e-05 | 5.3076e-05 | 5.3076e-05 |   0.0 |  0.02
+Other   |            | 0.0008202  |            |       |  0.31
 
 Nlocal:            480 ave         480 max         480 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -492,6 +494,7 @@ Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 
+if "${tests}==1" then "write_data simulation_data/test.data nocoeff nofix"                       "quit"
 write_data      simulation_data/final.data nocoeff nofix
 System init for write_data ...
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule

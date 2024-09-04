@@ -10,6 +10,7 @@ LAMMPS (27 Jun 2024)
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 variable realistic equal "-1"
+variable tests equal "0"
 variable name string generate_platelets
 log simulation_data/log.${name}
 log simulation_data/log.generate_platelets
