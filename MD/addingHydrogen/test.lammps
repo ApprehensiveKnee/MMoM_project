@@ -48,13 +48,6 @@ fix             myspr C spring/self 5
 thermo 500
 variable        T equal 298
 velocity        all create ${T} 1234567 dist gaussian
-# fix             nve1 mob_atoms nve
-# compute         tcar mob_carbons temp
-# fix             myber1 mob_atoms temp/berendsen ${T} ${T} 200
-# fix_modify      myber1 temp tcar
-# compute         tgas H2 temp
-# fix             myber2 mob_atoms temp/berendsen ${T} ${T} 200
-# fix_modify      myber2 temp tgas
 #----------------------------------------------------------------
 compute_modify thermo_temp dynamic yes
 compute ctH2 H2 temp
@@ -65,14 +58,14 @@ compute ctC C temp
 fix mynvt2 C nvt temp ${T} ${T} 0.1
 fix_modify mynvt2 temp ctC
 timestep 0.05
-#thermo_style custom step temp pe ke etotal press vol
+thermo_style custom step temp pe ke etotal press vol
 #----------------------------------------------------------------
 # fix             npt1 mob_atoms npt temp ${T} ${T} 200 iso 113 113 2000
 
 
 # Fix the motion of the outer carbons
 
-dump            test_dump all atom 100 simulation_data/test.lammpstrj
+dump            test_dump all atom 1000 simulation_data/test.lammpstrj
 
 run 500000
 
@@ -88,7 +81,7 @@ variable tfac equal 3.0/3.0
 fix fgcmc H2 gcmc 100 100 0 2 65899 ${T} -0.5 0.1 &
     tfac_insert ${tfac} group H2 &
     pressure 113 #region system
-run 300000
+run 400000
 
 write_data     ensemble.data
 write_dump     all atom simulation_data/ensemble.lammpstrj
