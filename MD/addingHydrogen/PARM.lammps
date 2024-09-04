@@ -44,7 +44,7 @@ variable P_h equal 0.81 # Å^3
 variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 
-variable epsilon equal v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
+variable epsilon equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
 
 pair_coeff 1 2 cb ${epsilon} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential 
 #pair_coeff 1 2 lj/cut 0.3025 2.065
