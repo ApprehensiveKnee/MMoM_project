@@ -1,31 +1,6 @@
-# --- log file ---
-
-variable pre equal 112 # desired pressure (Atm)
-variable tem equal 300 # desired temperature (K)
-
-variable k1 equal 5.2 # spring constant
-variable k2 equal 3.5 # spring constant
-
-units real
-atom_style molecular
-boundary p p p
-neighbor 1.0 bin
-neigh_modify delay 3 one 6000
-bond_style harmonic
-angle_style harmonic
-dihedral_style opls
-improper_style harmonic
-pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
-# *--* C-C parameters *--*
-bond_style harmonic
-angle_style harmonic
-dihedral_style opls
-improper_style harmonic
-# *--* C-C parameters *--*
-
-
-# 2. Read the graphite platelet data file and define potentials parameters
-read_data       ../geometry/carbonPlatelets/simulation_data/abpot_sys.data  extra/atom/types 1
+LAMMPS (27 Jun 2024)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
 Reading data file ...
   orthogonal box = (-30 -30 -30) to (30 30 30)
   3 by 4 by 4 MPI processor grid
@@ -60,26 +35,6 @@ Finding 1-2 1-3 1-4 neighbors ...
     18 = max # of special neighbors
   special bonds CPU = 0.002 seconds
   read_data CPU = 0.046 seconds
-include         PARM.lammps
-
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#//     Filename: PARM.lammps
-#//     File Type: LAMMPS input script
-#//     Description: This script defines the parameters for the simulation of hydrogen absorption in graphite platelets.
-#//     Author: Edoardo Cabiati
-#//     Date: 2024-07-27
-#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-mass 2 2.016 # For now at least, in accordance with the paper by Wang and Johnson,
-             # 1998, the hydrogen atoms are regarded as simple spherical atoms
-
-# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
-pair_coeff 1 1 lj/cut 0.066 3.4
-bond_coeff 1 469 1.4
-angle_coeff 1 63 120
-dihedral_coeff 1 0 7.25 0 0
-improper_coeff 1 5 180
-special_bonds lj 0.0 0.0 0.5
 Finding 1-2 1-3 1-4 neighbors ...
   special bond factors lj:    0        0        0.5     
   special bond factors coul:  0        0        0       
@@ -88,100 +43,17 @@ Finding 1-2 1-3 1-4 neighbors ...
     18 = max # of 1-4 neighbors
     18 = max # of special neighbors
   special bonds CPU = 0.001 seconds
-# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
-# -------------------------------------------------------------------------------------------------
-# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
-variable alpha equal 1.713          #|
-variable sigma equal 1.567          #|
-variable gamma equal 0.00993        #|
-variable c6 equal 12.14             #|      The parameters are all in atomic units, the conversion to kcal/mol
-variable c8 equal 215.2             #|      is performed in the pair_sg.cpp file
-variable c9 equal 143.1             #|
-variable c10 equal 4813.9           #|
-variable rc equal 8.321             #|
-pair_coeff 2 2 sg ${alpha} ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} # H-H potentials
-pair_coeff 2 2 sg 1.713 ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 ${c6} ${c8} ${c9} ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 ${c8} ${c9} ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 ${c9} ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 ${c10} ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 ${rc} 
-pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 
-#pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 # H-H potentials
-# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
-# -------------------------------------------------------------------------------------------------
-# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
-variable sigma_CC equal 3.43 # Å
-variable sigma_HH equal 3.075 # Å
-variable sigma_CH_geo equal sqrt(${sigma_CC}*${sigma_HH}) # Å
-variable sigma_CH_geo equal sqrt(3.43*${sigma_HH}) 
-variable sigma_CH_geo equal sqrt(3.43*3.075) 
-variable sigma_CH_arit equal 0.5*(${sigma_CC}+${sigma_HH}) # Å
-variable sigma_CH_arit equal 0.5*(3.43+${sigma_HH}) 
-variable sigma_CH_arit equal 0.5*(3.43+3.075) 
-
-variable P_par equal 0.57 # Å^3
-variable P_perp equal 1.995 # Å^3
-variable P_h equal 0.81 # Å^3
-variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
-variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
-
-variable epsilon equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
-
-pair_coeff 1 2 cb ${epsilon} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential
-pair_coeff 1 2 cb 0.750549668586509 ${sigma_CH_geo} ${P_par} ${P_perp} 
-pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 ${P_par} ${P_perp} 
-pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 0.57 ${P_perp} 
-pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 0.57 1.995 
-#pair_coeff 1 2 lj/cut 0.3025 2.065
-# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
-
-# 3. Add a single hydrogen molecule to the system, close to the center of the first platelet
-create_atoms    2 single 0 0 -2
 Created 1 atoms
   using lattice units in orthogonal box = (-30 -30 -30) to (30 30 30)
   create_atoms CPU = 0.000 seconds
-
-group           C type 1
 480 atoms in group C
-group           H2 type 2
 1 atoms in group H2
-
-# 4. Equilibration
-timestep        0.05
-fix             mytth1 C spring/self ${k2} # Apply a spring force to the carbon atoms
-fix             mytth1 C spring/self 3.5 
-velocity        all create ${tem} 48 rot yes mom yes dist gaussian # Initialize velocities
-velocity        all create 300 48 rot yes mom yes dist gaussian 
-fix             mynpt all npt temp ${tem} ${tem} 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 # Apply NPT ensemble to the system
-fix             mynpt all npt temp 300 ${tem} 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 
-fix             mynpt all npt temp 300 300 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 
-fix             mynpt all npt temp 300 300 100 x 112 ${pre} 1000 y ${pre} ${pre} 1000 
-fix             mynpt all npt temp 300 300 100 x 112 112 1000 y ${pre} ${pre} 1000 
-fix             mynpt all npt temp 300 300 100 x 112 112 1000 y 112 ${pre} 1000 
-fix             mynpt all npt temp 300 300 100 x 112 112 1000 y 112 112 1000 
-
-thermo          10000
-dump            dump all atom 1000 simulation_data/absorption_pot.lammpstrj
-
-run             20000
 
 CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
 
 Your simulation uses code contributions which should be cited:
-
 - Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
-
-@Article{Gissinger24,
- author = {Jacob R. Gissinger, Ilia Nikiforov, Yaser Afshar, Brendon Waters, Moon-ki Choi, Daniel S. Karls, Alexander Stukowski, Wonpil Im, Hendrik Heinz, Axel Kohlmeyer, and Ellad B. Tadmor},
- title = {Type Label Framework for Bonded Force Fields in LAMMPS},
- journal = {J. Phys. Chem. B},
- year =    2024,
- volume =  128,
- number =  13,
- pages =   {3282–-3297}
-}
+The log file lists these citations in BibTeX format.
 
 CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
 
@@ -213,6 +85,10 @@ Neighbor list info ...
       pair build: half/bin/newton
       stencil: half/bin/3d
       bin: standard
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 0
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.28 | 13.37 | 13.93 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press          Volume    
          0   300            308.43814      19603.922      20341.597     -432.48369      216000       
@@ -246,26 +122,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 55
 Dangerous builds = 0
-unfix           mynpt
-unfix           mytth1
-
-# 5. Umbrella sampling
-fix             mynvt all nvt temp ${tem} ${tem} 100
-fix             mynvt all nvt temp 300 ${tem} 100
-fix             mynvt all nvt temp 300 300 100
-fix             mytth1 C spring/self ${k2}
-fix             mytth1 C spring/self 3.5
-
-variable        cpt loop 51
-label           loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(1-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -15 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 20000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.74 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
      20000   322.02648      371.05675      18538.378      19370.187     -418.66256    
@@ -298,10 +159,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 142
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/1.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 30000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.78 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
      30000   249.77434      339.84381      18576.333      19273.551     -1089.2605    
@@ -338,17 +200,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 230
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(2-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -14.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 80000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.83 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
      80000   290.13388      397.36365      18563.455      19375.939      438.08304    
@@ -381,10 +237,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/2.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 90000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.83 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
      90000   290.66696      366.32598      18567.065      19349.274     -352.67882    
@@ -421,17 +278,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 101
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(3-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -13.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 140000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.84 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     140000   299.3483       384.27003      18552.683      19365.257      191.15505    
@@ -464,10 +315,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/3.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 150000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.84 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     150000   307.66326      384.43141      18539.707      19364.34       270.14594    
@@ -504,17 +356,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 75
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(4-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -13.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 200000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.85 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     200000   326.20261      368.71962      18550.406      19385.852     -196.02699    
@@ -547,10 +393,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 11
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/4.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 210000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.85 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     210000   304.44979      383.46714      18554.157      19373.228      173.9043     
@@ -587,17 +434,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 88
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(5-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -12.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 260000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.85 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     260000   292.65536      376.63334      18553.593      19348.954      14.155678    
@@ -630,10 +471,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 14
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/5.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 270000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.85 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     270000   283.24989      383.1465       18537.097      19325.514      258.10927    
@@ -670,17 +512,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 83
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(6-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -12 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 320000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     320000   312.8908       371.47337      18497.921      19317.075     -111.85208    
@@ -713,10 +549,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 19
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/6.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 330000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     330000   293.67285      381.13754      18543.179      19344.5        188.46022    
@@ -753,17 +590,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 64
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(7-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -11.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 380000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     380000   299.86101      363.94179      18539.196      19332.175     -228.55955    
@@ -796,10 +627,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/7.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 390000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     390000   281.60216      380.67561      18521.859      19305.448      200.57801    
@@ -836,17 +668,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 63
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(8-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -10.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 440000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     440000   304.87462      372.05431      18575.518      19383.784     -125.85633    
@@ -879,10 +705,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 19
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/8.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 450000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     450000   312.48358      368.87389      18509.077      19325.049     -255.61388    
@@ -919,17 +746,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 78
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(9-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -10.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 500000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     500000   297.34538      376.6971       18499.544      19301.679     -63.012752    
@@ -962,10 +783,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 13
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/9.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 510000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     510000   307.98299      374.8613       18512.154      19327.674     -56.085019    
@@ -1002,17 +824,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 57
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(10-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -9.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 560000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     560000   325.64503      365.45393      18537.857      19369.24      -195.87105    
@@ -1045,10 +861,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 14
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/10.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 570000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     570000   291.39063      385.63925      18538.466      19341.024      98.552667    
@@ -1085,17 +902,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 49
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(11-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -9 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 620000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     620000   319.11533      367.64899      18544.371      19368.607     -201.64074    
@@ -1128,10 +939,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 25
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/11.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 630000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.86 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     630000   299.20006      391.80305      18530.608      19350.503     -24.237336    
@@ -1168,17 +980,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 83
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(12-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -8.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 680000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     680000   290.66348      390.7778       18529.611      19336.267     -5.7274942    
@@ -1211,10 +1017,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 17
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/12.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 690000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     690000   297.7021       392.83509      18526.009      19344.793     -45.542935    
@@ -1251,17 +1058,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 89
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(13-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -7.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 740000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     740000   296.02549      393.95757      18521.806      19339.313      16.160966    
@@ -1294,10 +1095,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 25
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/13.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 750000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     750000   289.95126      391.22226      18540.123      19346.204     -65.423738    
@@ -1334,17 +1136,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 130
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(14-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -7.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 800000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     800000   299.92566      401.44809      18525.964      19356.542      149.61536    
@@ -1377,10 +1173,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 30
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/14.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 810000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     810000   289.27093      393.68271      18528.153      19335.721     -67.670736    
@@ -1417,17 +1214,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 158
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(15-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -6.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 860000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     860000   303.79228      383.23009      18538.928      19356.82      -260.89118    
@@ -1460,10 +1251,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 45
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/15.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 870000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     870000   296.27846      383.36043      18530.715      19337.987     -267.35103    
@@ -1500,17 +1292,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 229
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(16-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 920000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     920000   308.89545      386.27692      18516.911      19345.152     -127.79745    
@@ -1543,10 +1329,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 47
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/16.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 930000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     930000   287.64432      390.1119       18498.559      19300.229     -34.287498    
@@ -1583,17 +1370,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 228
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(17-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -5.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 980000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     980000   295.56067      393.18717      18507.896      19323.968      45.246999    
@@ -1626,10 +1407,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 42
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/17.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 990000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
     990000   301.00355      383.36393      18542.084      19356.12      -215.08274    
@@ -1666,17 +1448,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 181
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(18-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -4.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1040000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1040000   301.70145      393.97454      18535.796      19361.442      118.49903    
@@ -1709,10 +1485,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 44
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/18.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1050000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1050000   328.47126      380.23738      18500.374      19350.584     -221.77778    
@@ -1749,17 +1526,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 211
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(19-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -4.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1100000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1100000   307.49579      391.57885      18519.627      19351.167      57.697347    
@@ -1792,10 +1563,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 42
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/19.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1110000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.87 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1110000   286.34228      388.25118      18481.673      19279.619      42.477799    
@@ -1832,17 +1604,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 234
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(20-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -3.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1160000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1160000   299.26822      383.55962      18496.767      19308.516     -183.4269     
@@ -1875,10 +1641,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 36
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/20.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1170000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1170000   298.37911      388.68025      18511.443      19327.04      -75.788016    
@@ -1915,17 +1682,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 183
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(21-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -3 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1220000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1220000   295.27716      381.42182      18506.562      19310.463     -334.48079    
@@ -1958,10 +1719,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 45
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/21.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1230000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1230000   302.67999      391.80136      18510.633      19335.505      12.936546    
@@ -1998,17 +1760,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 236
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(22-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -2.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1280000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1280000   308.34836      384.37833      18513.772      19339.332     -187.57691    
@@ -2041,10 +1797,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 42
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/22.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1290000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1290000   301.82007      387.67244      18510.473      19329.986     -66.690937    
@@ -2081,17 +1838,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 207
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(23-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -1.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1340000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1340000   319.80981      387.07347      18533.782      19378.436     -141.32674    
@@ -2124,10 +1875,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 35
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/23.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1350000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1350000   307.01736      386.8215       18543.896      19369.995     -291.93948    
@@ -2164,17 +1916,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 184
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(24-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -1.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1400000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1400000   294.40713      399.98056      18524.583      19345.798      336.02199    
@@ -2207,10 +1953,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 43
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/24.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1410000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1410000   316.68251      379.29917      18512.096      19344.501     -310.32405    
@@ -2247,17 +1994,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 235
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(25-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 -0.600000000000001 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1460000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1460000   298.25705      394.39759      18513.044      19334.184      109.27212    
@@ -2290,10 +2031,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 43
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/25.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1470000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1470000   299.05575      391.82084      18515.291      19334.997     -80.073527    
@@ -2330,17 +2072,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 212
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(26-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 0 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1520000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1520000   294.80569      391.17774      18495.295      19308.277      25.909165    
@@ -2373,10 +2109,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 36
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/26.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1530000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1530000   291.67855      389.60022      18521.648      19328.578     -80.964451    
@@ -2413,17 +2150,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 176
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(27-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 0.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1580000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1580000   296.72917      386.56413      18530.962      19342.083     -197.48352    
@@ -2456,10 +2187,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 41
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/27.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1590000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1590000   302.63638      390.37523      18534.565      19357.949      17.714947    
@@ -2496,17 +2228,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 220
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(28-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 1.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1640000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1640000   296.75775      381.41775      18526.062      19332.077     -313.4043     
@@ -2539,10 +2265,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 40
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/28.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1650000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1650000   316.6555       387.29263      18516.731      19357.091     -37.206276    
@@ -2579,17 +2306,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 209
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(29-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 1.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1700000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1700000   305.02316      389.83251      18514.772      19341.028      86.906877    
@@ -2622,10 +2343,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 34
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/29.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1710000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1710000   336.60223      384.7808       18515.579      19381.966     -54.34498     
@@ -2662,17 +2384,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 182
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(30-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 2.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1760000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1760000   288.05448      394.68505      18509.254      19316.084      112.54432    
@@ -2705,10 +2421,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 45
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/30.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1770000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1770000   297.17555      384.93303      18534.292      19344.421     -127.35342    
@@ -2745,17 +2462,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 237
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(31-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 3 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1820000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1820000   316.86521      388.24033      18507.57       19349.177     -96.885972    
@@ -2788,10 +2499,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 39
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/31.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1830000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1830000   331.07776      394.93416      18519.544      19388.18       200.70146    
@@ -2828,17 +2540,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 205
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(32-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 3.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1880000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1880000   290.49076      387.25658      18481.062      19283.949     -38.282866    
@@ -2871,10 +2577,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 34
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/32.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1890000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1890000   305.77586      390.05694      18515.376      19342.933      76.123109    
@@ -2911,17 +2618,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 184
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(33-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 4.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1940000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1940000   304.7368       385.03065      18499.475      19320.52      -201.19608    
@@ -2954,10 +2655,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 45
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/33.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 1950000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    1950000   306.73317      389.22348      18513.583      19341.677     -52.417481    
@@ -2994,17 +2696,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 234
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(34-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 4.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2000000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2000000   302.89735      385.13365      18532.452      19350.968     -160.87182    
@@ -3037,10 +2733,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 36
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/34.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2010000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2010000   294.60507      390.36027      18471.009      19282.887     -13.969882    
@@ -3077,17 +2774,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 182
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(35-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 5.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2060000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2060000   300.96097      391.49623      18526.853      19348.961     -75.982972    
@@ -3120,10 +2811,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 42
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/35.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2070000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2070000   297.64492      379.54453      18518.876      19324.288     -218.63225    
@@ -3160,17 +2852,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 207
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(36-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2120000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2120000   311.84264      390.36753      18503.749      19340.297      2.8165093    
@@ -3203,10 +2889,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 37
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/36.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2130000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2130000   271.89015      376.84499      18498.631      19264.494     -289.05786    
@@ -3243,17 +2930,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 193
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(37-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 6.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2180000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2180000   295.5147       400.05756      18536.229      19359.106      193.05581    
@@ -3286,10 +2967,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 46
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/37.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2190000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2190000   328.60434      376.73633      18539.419      19386.318     -454.07621    
@@ -3326,17 +3008,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 230
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(38-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 7.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2240000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2240000   310.42997      397.4904       18499.928      19341.578      150.57675    
@@ -3369,10 +3045,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 39
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/38.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2250000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2250000   293.02718      387.90548      18515.631      19322.796     -141.51525    
@@ -3409,17 +3086,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 201
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(39-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 7.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2300000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2300000   293.93352      392.81301      18489.594      19302.964      97.201821    
@@ -3452,10 +3123,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 31
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/39.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2310000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2310000   303.07727      388.13152      18506.351      19328.122     -55.450285    
@@ -3492,17 +3164,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 168
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(40-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 8.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2360000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2360000   291.08621      395.98413      18528.412      19340.879      108.05453    
@@ -3535,10 +3201,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 37
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/40.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2370000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2370000   324.73867      385.93581      18514.326      19364.895     -136.73711    
@@ -3575,17 +3242,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 166
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(41-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 9 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2420000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2420000   308.72515      392.37665      18503.715      19337.812      117.63962    
@@ -3618,10 +3279,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 51
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/41.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2430000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2430000   291.62831      383.91591      18532.843      19334.017     -13.611375    
@@ -3658,17 +3320,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 212
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(42-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 9.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2480000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2480000   310.94238      382.47383      18524.223      19351.59      -266.82657    
@@ -3701,10 +3357,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 46
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/42.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2490000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2490000   311.64031      389.17448      18507.153      19342.219      59.292296    
@@ -3741,17 +3398,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 129
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(43-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 10.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2540000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2540000   284.95117      366.2829       18513.639      19287.627     -193.04369    
@@ -3784,10 +3435,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 13
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/43.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2550000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2550000   302.00226      368.00128      18526.68       19326.783     -151.54714    
@@ -3824,17 +3476,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 94
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(44-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 10.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2600000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2600000   308.58329      365.55187      18540.781      19347.851     -99.951481    
@@ -3867,10 +3513,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 23
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/44.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2610000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2610000   297.54323      369.10136      18516.942      19311.765     -96.923549    
@@ -3907,17 +3554,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 75
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(45-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 11.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2660000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2660000   294.86903      369.67215      18516.544      19308.111      2.6218111    
@@ -3950,10 +3591,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 11
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/45.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2670000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2670000   277.81949      358.75032      18525.448      19281.699     -396.75592    
@@ -3990,17 +3632,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 56
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(46-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 12 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2720000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2720000   291.52575      374.93221      18548.362      19340.406     -25.557439    
@@ -4033,10 +3669,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 9
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/46.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2730000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.88 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2730000   292.81224      367.21289      18493.938      19280.103     -125.80762    
@@ -4073,17 +3710,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 52
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(47-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 12.6 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2780000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2780000   285.64016      372.74166      18541.581      19323.014      55.247154    
@@ -4116,10 +3747,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 11
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/47.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2790000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2790000   301.91732      374.07153      18537.955      19344.006      167.72712    
@@ -4156,17 +3788,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 54
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(48-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 13.2 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2840000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2840000   320.93386      359.9945       18515.895      19335.078     -213.33952    
@@ -4199,10 +3825,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 14
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/48.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2850000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2850000   316.6642       362.56408      18536.952      19352.596     -250.94004    
@@ -4239,17 +3866,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 64
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(49-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 13.8 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2900000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2900000   311.56814      359.69682      18542.654      19348.139     -327.28531    
@@ -4282,10 +3903,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/49.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2910000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2910000   299.5631       384.45532      18494.715      19307.782      230.94093    
@@ -4322,17 +3944,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 56
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(50-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 14.4 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2960000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2960000   314.42263      359.84342      18509.747      19319.463     -341.48643    
@@ -4365,10 +3981,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/50.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 2970000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    2970000   301.65023      370.30552      18505.677      19307.581      71.396355    
@@ -4405,17 +4022,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 68
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-variable        zdes equal  -15+0.60*(${cpt}-1)
-variable        zdes equal  -15+0.60*(51-1)
-variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 ${zdes} 0
-fix             mytth2 H2 spring tether 5.2 2.5 2.5 15 0
-run             10000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 3020000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    3020000   294.0776       369.08914      18521.978      19311.83      -20.989706    
@@ -4448,10 +4059,11 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 12
 Dangerous builds = 0
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
-fix             myat1 all ave/time 1000 10 10000 v_zave v_zdes file simulation_data/abpot/51.dat
-run             50000
 Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Setting up Verlet run ...
+  Unit style    : real
+  Current step  : 3030000
+  Time step     : 0.05
 Per MPI rank memory allocation (min/avg/max) = 13.32 | 13.89 | 14.98 Mbytes
    Step          Temp          E_pair         E_mol          TotEng         Press     
    3030000   277.73804      374.53221      18501.87       19273.786      160.48019    
@@ -4488,8 +4100,4 @@ Ave neighs/atom = 0
 Ave special neighs/atom = 15.567568
 Neighbor list builds = 57
 Dangerous builds = 0
-unfix           myat1
-next            cpt
-jump            SELF loop
-
 Total wall time: 0:15:50
