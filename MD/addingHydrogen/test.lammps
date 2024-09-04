@@ -27,12 +27,12 @@ read_data ../geometry/carbonPlatelets/simulation_data/final.data  extra/atom/typ
 include PARM.lammps
 
 # For the test file, reduce the dimensions of the problem
-region deletion_box block -5 5 -5 5 INF INF side out
+region deletion_box block -7.5 7.5 -7.5 7.5 INF INF side out
 group group_out region deletion_box
 delete_atoms group group_out
-reset_atoms     id sort yes
 # Resizing the box
-change_box all x final -10 10 y final -10 10 z final -15 15 remap units box
+change_box all x final -10 10 y final -10 10 z final -15 15 units box
+reset_atoms     id sort yes
 
 # 4. Generate the initial hydrogen atoms
 lattice sc 3
