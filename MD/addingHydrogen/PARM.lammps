@@ -33,6 +33,7 @@ pair_coeff 2 2 sg ${alpha} ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} # H-
 # //////////////////////////////////////    H-H potentials    //////////////////////////////////////
 # -------------------------------------------------------------------------------------------------
 # //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+# Parameters taken from the paper by Wang and Johnson, 1998
 variable sigma_CC equal 3.43 # Å
 variable sigma_HH equal 3.075 # Å
 variable sigma_CH_geo equal sqrt(${sigma_CC}*${sigma_HH}) # Å
@@ -44,8 +45,14 @@ variable P_h equal 0.81 # Å^3
 variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 
-variable epsilon equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
+variable epsilon equal 4*(5/11)*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol 
+# The formula taken from paper by Wang and Johnson, 1998 to construct epsilon does not seem to be consistent with the
+# results obtained from the LAMMPS simulation. We will be using the value of epsilon obtained from the simplified 
+# version of the CB potential as 12-6 lennard-jones potential, presented in the paper "Theoretical investigation of the
+# effect of graphite interlayer spacing on hydrogen absorption" by Rachel S. Aga, C. L. Fu, Maja Krčmar, and James R. Morris.
+variable epsilon_sub equal 4*0.085094 # kcal/mol
+variable sigma equal 2.97 # Å
 
-pair_coeff 1 2 cb ${epsilon} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential 
+pair_coeff 1 2 cb ${epsilon_sub} ${sigma} ${P_par} ${P_perp} # C-H potential 
 #pair_coeff 1 2 lj/cut 0.3025 2.065
 # //////////////////////////////////////    C-H potentials    //////////////////////////////////////
