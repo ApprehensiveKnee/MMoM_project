@@ -9,7 +9,7 @@
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 variable realistic equal "-1"
-variable tests equal "0"
+variable tests equal "1"
 variable name string generate_platelets
 log simulation_data/log.${name}
 
@@ -99,6 +99,7 @@ next            groups
 jump            SELF setup_loop
 
 change_box      all x final -${Lx} ${Lx} y final -${Ly} ${Ly} z final -${Lz} ${Lz} units box
+if "${tests}==1" then "change_box all x final -12.5 12.5 y final -12.5 12.5 z final -${Lz} ${Lz} units box"
 reset_atoms     id sort yes
 
 
