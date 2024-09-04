@@ -29,9 +29,10 @@ include PARM.lammps
 # For the test file, reduce the dimensions of the problem
 region deletion_box block -7.5 7.5 -7.5 7.5 INF INF side out
 group group_out region deletion_box
-delete_atoms group group_out
+delete_atoms group group_out compress yes
 # Resizing the box
 change_box all x final -10 10 y final -10 10 z final -15 15 units box
+
 
 # 4. Generate the initial hydrogen atoms
 lattice sc 3
