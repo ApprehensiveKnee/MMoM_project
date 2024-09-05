@@ -1,0 +1,91 @@
+
+# --- log file ---
+variable name string test
+log ./logs/log.${name}
+# --- log file ---
+
+# 1. Initialization
+units real
+boundary p p p
+atom_style molecular
+neighbor 1 bin
+neigh_modify delay 3 one 6000
+pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
+#kspace_style pppm 1.0e-4
+# *--* C-C parameters *--*
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+# *--* C-C parameters *--*
+
+
+# 2. Read the graphite platelet data file
+# 3. Define potentials parameters
+read_data ../geometry/carbonPlatelets/simulation_data/test.data  extra/atom/types 1
+include PARM.lammps
+
+# 4. Generate the initial hydrogen atoms
+lattice sc 3
+create_atoms 2 box ratio 0.01 428795
+lattice none 1
+# Print the number of hydrogen atoms to file and delete the overlapping hydrogen atoms generated
+variable hydrogen atom "type==2"
+group hydrogen dynamic all var hydrogen
+variable nH equal count(hydrogen)
+fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogenCount_without.data
+
+group           C type 1
+group           H2 type 2
+delete_atoms    overlap 4 H2 C 
+reset_atoms     id sort yes
+
+# =================================================================================================
+# Remove the carbon atoms to compute the excess adsorption of hydrogen atoms
+delete_atoms group C
+reset_atoms id sort yes
+# =================================================================================================
+
+# 5. Equilibration step
+thermo 1000
+variable        T equal 298
+velocity        all create ${T} 1234567 dist gaussian
+#----------------------------------------------------------------
+compute_modify thermo_temp dynamic yes
+compute ctH2 H2 temp
+compute_modify ctH2 dynamic yes
+fix mynvt1 H2 nvt temp ${T} ${T} 0.1
+fix_modify mynvt1 temp ctH2
+timestep 0.05
+thermo_style custom step temp pe ke etotal press vol
+#----------------------------------------------------------------
+# fix             npt1 mob_atoms npt temp ${T} ${T} 200 iso 113 113 2000
+
+
+# Fix the motion of the outer carbons
+
+dump            test_dump all atom 100 simulation_data/just_hydrogen.lammpstrj
+
+run 100000
+
+# 6. Production step - GCMC
+variable tfac equal 3.0/3.0
+# variable xlo equal xlo+0.1
+# variable xhi equal xhi-0.1
+# variable ylo equal ylo+0.1
+# variable yhi equal yhi-0.1
+# variable zlo equal zlo+0.1
+# variable zhi equal zhi-0.1
+# region system block ${xlo} ${xhi} ${ylo} ${yhi} ${zlo} ${zhi}
+fix fgcmc H2 gcmc 100 100 0 2 65899 ${T} -0.5 0.1 &
+    tfac_insert ${tfac} group H2 &
+    pressure 113 #region system
+run 40000
+# After the number of hydrogen atoms has been equilibrated,
+# compute density profile for the hydrogen atoms along the absorbate direction
+compute cc1 H2 chunk/atom bin/1d z 0.0 0.1
+fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_without.profile
+
+run 10000
+# =================================================================================================
+
