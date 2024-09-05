@@ -1,0 +1,566 @@
+# --- log file ---
+
+# 1. Initialization
+units real
+boundary p p p
+atom_style molecular
+neighbor 1 bin
+neigh_modify delay 3 one 6000
+pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
+#kspace_style pppm 1.0e-4
+# *--* C-C parameters *--*
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+# *--* C-C parameters *--*
+
+
+# 2. Read the graphite platelet data file
+# 3. Define potentials parameters
+read_data ../geometry/carbonPlatelets/simulation_data/final.data  extra/atom/types 1
+Reading data file ...
+  orthogonal box = (-30 -30 -15) to (30 30 15)
+  2 by 3 by 1 MPI processor grid
+  reading atoms ...
+  240 atoms
+  reading velocities ...
+  240 velocities
+  scanning bonds ...
+  2 = max bonds/atom
+  scanning angles ...
+  3 = max angles/atom
+  scanning dihedrals ...
+  8 = max dihedrals/atom
+  scanning impropers ...
+  2 = max impropers/atom
+  orthogonal box = (-30 -30 -15) to (30 30 15)
+  2 by 3 by 1 MPI processor grid
+  reading bonds ...
+  338 bonds
+  reading angles ...
+  634 angles
+  reading dihedrals ...
+  1197 dihedrals
+  reading impropers ...
+  198 impropers
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     3 = max # of 1-2 neighbors
+     6 = max # of 1-3 neighbors
+    18 = max # of 1-4 neighbors
+    18 = max # of special neighbors
+  special bonds CPU = 0.002 seconds
+  read_data CPU = 0.023 seconds
+include PARM.lammps
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: PARM.lammps
+#//     File Type: LAMMPS input script
+#//     Description: This script defines the parameters for the simulation of hydrogen absorption in graphite platelets.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-07-27
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+mass 2 2.016 # For now at least, in accordance with the paper by Wang and Johnson,
+             # 1998, the hydrogen atoms are regarded as simple spherical atoms
+
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+pair_coeff 1 1 lj/cut 0.066 3.4
+bond_coeff 1 469 1.4
+angle_coeff 1 63 120
+dihedral_coeff 1 0 7.25 0 0
+improper_coeff 1 5 180
+special_bonds lj 0.0 0.0 0.5
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0.5     
+  special bond factors coul:  0        0        0       
+     3 = max # of 1-2 neighbors
+     6 = max # of 1-3 neighbors
+    18 = max # of 1-4 neighbors
+    18 = max # of special neighbors
+  special bonds CPU = 0.001 seconds
+# //////////////////////////////////////    C-C potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+variable alpha equal 1.713          #|
+variable sigma equal 1.567          #|
+variable gamma equal 0.00993        #|
+variable c6 equal 12.14             #|      The parameters are all in atomic units, the conversion to kcal/mol
+variable c8 equal 215.2             #|      is performed in the pair_sg.cpp file
+variable c9 equal 143.1             #|
+variable c10 equal 4813.9           #|
+variable rc equal 8.321             #|
+pair_coeff 2 2 sg ${alpha} ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} # H-H potentials
+pair_coeff 2 2 sg 1.713 ${sigma} ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 ${gamma} ${c6} ${c8} ${c9} ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 ${c6} ${c8} ${c9} ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 ${c8} ${c9} ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 ${c9} ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 ${c10} ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 ${rc} 
+pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 
+#pair_coeff 2 2 sg 1.713 1.567 0.00993 12.14 215.2 143.1 4813.9 8.321 # H-H potentials
+# //////////////////////////////////////    H-H potentials    //////////////////////////////////////
+# -------------------------------------------------------------------------------------------------
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+# Parameters taken from the paper by Wang and Johnson, 1998
+variable sigma_CC equal 3.43 # Å
+variable sigma_HH equal 3.075 # Å
+variable sigma_CH_geo equal sqrt(${sigma_CC}*${sigma_HH}) # Å
+variable sigma_CH_geo equal sqrt(3.43*${sigma_HH}) 
+variable sigma_CH_geo equal sqrt(3.43*3.075) 
+variable sigma_CH_arit equal 0.5*(${sigma_CC}+${sigma_HH}) # Å
+variable sigma_CH_arit equal 0.5*(3.43+${sigma_HH}) 
+variable sigma_CH_arit equal 0.5*(3.43+3.075) 
+
+variable P_par equal 0.57 # Å^3
+variable P_perp equal 1.995 # Å^3
+variable P_h equal 0.81 # Å^3
+variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
+variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
+
+variable epsilon_CB equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol
+# The following is a set of parameters taken from the paper "Theoretical investigation of the effect of graphite interlayer
+# spacing on hydrogen absorption" by Rachel S. Aga, C. L. Fu, Maja Krčmar, and James R. Morris, where the CB potential is
+# simplified into a 12-6 LJ potential 4*epsilon*⌊(sigma/r)^12 − (sigma/r)^6⌋ .
+# variable epsilon equal 4*0.085094 # kcal/mol
+# variable sigma equal 2.97 # Å
+
+pair_coeff 1 2 cb ${epsilon_CB} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential
+pair_coeff 1 2 cb 0.750549668586509 ${sigma_CH_geo} ${P_par} ${P_perp} 
+pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 ${P_par} ${P_perp} 
+pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 0.57 ${P_perp} 
+pair_coeff 1 2 cb 0.750549668586509 3.24765299870537 0.57 1.995 
+# //////////////////////////////////////    C-H potentials    //////////////////////////////////////
+
+# 4. Generate the initial hydrogen atoms
+lattice sc 3
+Lattice spacing in x,y,z = 3 3 3
+create_atoms 2 box ratio 0.01 428795
+Created 40 atoms
+  using lattice units in orthogonal box = (-30 -30 -15) to (30 30 15)
+  create_atoms CPU = 0.000 seconds
+lattice none 1
+# Print the number of hydrogen atoms to file and delete the overlapping hydrogen atoms generated
+variable hydrogen atom "type==2"
+group hydrogen dynamic all var hydrogen
+dynamic group hydrogen defined
+variable nH equal count(hydrogen)
+fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount${H}.data
+fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount30.data
+
+group           C type 1
+240 atoms in group C
+group           H2 type 2
+40 atoms in group H2
+delete_atoms    overlap 4 H2 C
+System init for delete_atoms ...
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Neighbor list info ...
+  update: every = 1 steps, delay = 3 steps, check = yes
+  max neighbors/atom: 6000, page size: 100000
+  master list distance cutoff = 31
+  ghost atom cutoff = 31
+  binsize = 15.5, bins = 4 4 2
+  5 neighbor lists, perpetual/occasional/extra = 4 1 0
+  (1) command delete_atoms, occasional
+      attributes: full, newton on
+      pair build: full/bin
+      stencil: full/bin/3d
+      bin: standard
+  (2) pair lj/cut, perpetual, skip trim from (5)
+      attributes: half, newton on, cut 15
+      pair build: skip/trim
+      stencil: none
+      bin: none
+  (3) pair sg, perpetual, skip trim from (5)
+      attributes: half, newton on, cut 16
+      pair build: skip/trim
+      stencil: none
+      bin: none
+  (4) pair cb, perpetual, skip from (5)
+      attributes: half, newton on
+      pair build: skip
+      stencil: none
+      bin: none
+  (5) neighbor class addition, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+WARNING: Ignoring 'compress yes' for molecular system (src/delete_atoms.cpp:141)
+Deleted 3 atoms, new total = 277
+reset_atoms     id sort yes
+Resetting atom IDs ...
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Neighbor list info ...
+  update: every = 1 steps, delay = 3 steps, check = yes
+  max neighbors/atom: 6000, page size: 100000
+  master list distance cutoff = 31
+  ghost atom cutoff = 31
+  binsize = 15.5, bins = 4 4 2
+  4 neighbor lists, perpetual/occasional/extra = 4 0 0
+  (1) pair lj/cut, perpetual, skip trim from (4)
+      attributes: half, newton on, cut 15
+      pair build: skip/trim
+      stencil: none
+      bin: none
+  (2) pair sg, perpetual, skip trim from (4)
+      attributes: half, newton on, cut 16
+      pair build: skip/trim
+      stencil: none
+      bin: none
+  (3) pair cb, perpetual, skip from (4)
+      attributes: half, newton on
+      pair build: skip
+      stencil: none
+      bin: none
+  (4) neighbor class addition, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0.5     
+  special bond factors coul:  0        0        0       
+     3 = max # of 1-2 neighbors
+     6 = max # of 1-3 neighbors
+    18 = max # of 1-4 neighbors
+    18 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+
+# Constrain carbon atoms
+fix             myspr C spring/self 5
+
+# 5. Equilibration step
+thermo 1000
+variable        T equal 298
+velocity        all create ${T} 1234567 dist gaussian
+velocity        all create 298 1234567 dist gaussian
+#----------------------------------------------------------------
+compute_modify thermo_temp dynamic yes
+compute ctH2 H2 temp
+compute_modify ctH2 dynamic yes
+fix mynvt1 H2 nvt temp ${T} ${T} 0.1
+fix mynvt1 H2 nvt temp 298 ${T} 0.1
+fix mynvt1 H2 nvt temp 298 298 0.1
+fix_modify mynvt1 temp ctH2
+WARNING: Temperature for fix modify is not for group all (src/fix_nh.cpp:1399)
+compute ctC C temp
+fix mynvt2 C nvt temp ${T} ${T} 0.1
+fix mynvt2 C nvt temp 298 ${T} 0.1
+fix mynvt2 C nvt temp 298 298 0.1
+fix_modify mynvt2 temp ctC
+WARNING: Temperature for fix modify is not for group all (src/fix_nh.cpp:1399)
+timestep 0.05
+thermo_style custom step temp pe ke etotal press vol
+#----------------------------------------------------------------
+# fix             npt1 mob_atoms npt temp ${T} ${T} 200 iso 113 113 2000
+
+
+# Fix the motion of the outer carbons
+
+dump            input_dump all atom 100 simulation_data/dumps/input${H}.lammpstrj
+dump            input_dump all atom 100 simulation_data/dumps/input30.lammpstrj
+
+run 100000
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Your simulation uses code contributions which should be cited:
+
+- Type Label Framework: https://doi.org/10.1021/acs.jpcb.3c08419
+
+@Article{Gissinger24,
+ author = {Jacob R. Gissinger, Ilia Nikiforov, Yaser Afshar, Brendon Waters, Moon-ki Choi, Daniel S. Karls, Alexander Stukowski, Wonpil Im, Hendrik Heinz, Axel Kohlmeyer, and Ellad B. Tadmor},
+ title = {Type Label Framework for Bonded Force Fields in LAMMPS},
+ journal = {J. Phys. Chem. B},
+ year =    2024,
+ volume =  128,
+ number =  13,
+ pages =   {3282–-3297}
+}
+
+CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
+
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Per MPI rank memory allocation (min/avg/max) = 13.35 | 13.55 | 13.95 Mbytes
+   Step          Temp          PotEng         KinEng         TotEng         Press          Volume    
+         0   298            10072.498      245.16566      10317.664     -230.5725       108000       
+      1000   284.48986      9490.9631      234.05083      9725.0139     -113.35758      108000       
+      2000   311.20556      9508.2801      256.02993      9764.31        590.30455      108000       
+      3000   300.88665      9495.3378      247.54052      9742.8783      317.08459      108000       
+      4000   270.43589      9502.0917      222.48857      9724.5803     -1083.6743      108000       
+      5000   293.32572      9499.4375      241.32012      9740.7576     -934.27344      108000       
+      6000   309.87428      9489.4849      254.93468      9744.4195      284.41536      108000       
+      7000   303.0921       9489.7141      249.35496      9739.0691      354.27471      108000       
+      8000   310.4352       9471.1164      255.39615      9726.5125     -606.86685      108000       
+      9000   307.47069      9513.4673      252.95723      9766.4246     -970.80762      108000       
+     10000   273.51767      9473.5113      225.02397      9698.5353      14.206036      108000       
+     11000   299.66681      9504.7982      246.53696      9751.3352      555.12076      108000       
+     12000   295.67464      9462.4515      243.25258      9705.7041     -333.79437      108000       
+     13000   311.39123      9480.7241      256.18268      9736.9067     -828.08406      108000       
+     14000   296.94106      9472.3455      244.29447      9716.64       -342.54594      108000       
+     15000   330.63794      9516.1961      272.01702      9788.2131      325.09237      108000       
+     16000   278.11809      9457.1047      228.80875      9685.9134      97.114698      108000       
+     17000   296.20511      9495.9568      243.689        9739.6458     -1001.777       108000       
+     18000   310.33319      9480.6029      255.31223      9735.9151     -665.39504      108000       
+     19000   314.67252      9471.6466      258.88221      9730.5288      402.91718      108000       
+     20000   293.16881      9485.5965      241.19103      9726.7876      138.03532      108000       
+     21000   313.8499       9466.0802      258.20544      9724.2856     -453.09191      108000       
+     22000   300.21333      9485.2774      246.98658      9732.264      -934.13626      108000       
+     23000   315.38617      9474.146       259.46933      9733.6154     -166.7067       108000       
+     24000   334.27363      9482.5862      275.00811      9757.5943      413.41788      108000       
+     25000   280.94027      9456.125       231.13057      9687.2555     -316.82841      108000       
+     26000   284.09441      9475.9303      233.72549      9709.6558     -938.61481      108000       
+     27000   295.26857      9456.231       242.9185       9699.1495     -172.4672       108000       
+     28000   311.17045      9491.7269      256.00104      9747.728       316.11038      108000       
+     29000   293.63279      9477.5044      241.57274      9719.0772      0.62987675     108000       
+     30000   312.08006      9487.5318      256.74938      9744.2812     -704.34456      108000       
+     31000   316.8131       9456.0933      260.64327      9716.7366     -642.21862      108000       
+     32000   300.04133      9462.5858      246.84508      9709.4309      242.94988      108000       
+     33000   291.90787      9476.3947      240.15364      9716.5484      217.65485      108000       
+     34000   284.1402       9450.4458      233.76316      9684.209      -527.55883      108000       
+     35000   317.13044      9482.4473      260.90434      9743.3517     -776.70026      108000       
+     36000   327.2127       9464.1543      269.19906      9733.3534     -108.99061      108000       
+     37000   302.92587      9466.8011      249.2182       9716.0193      439.8414       108000       
+     38000   286.20717      9442.0319      235.46367      9677.4955     -299.94418      108000       
+     39000   289.94688      9478.8181      238.54034      9717.3584     -924.93802      108000       
+     40000   290.87705      9438.5329      239.30559      9677.8385     -545.10875      108000       
+     41000   288.13133      9456.6793      237.04667      9693.726       249.75362      108000       
+     42000   283.63014      9440.8115      233.34353      9674.155       2.7463925      108000       
+     43000   333.02934      9473.9853      273.98443      9747.9697     -1075.2578      108000       
+     44000   305.03188      9444.8427      250.95081      9695.7935     -516.6795       108000       
+     45000   286.40877      9449.3447      235.62952      9684.9742      276.90291      108000       
+     46000   314.77322      9445.7126      258.96506      9704.6777      68.494661      108000       
+     47000   301.56933      9472.7131      248.10217      9720.8153     -684.7167       108000       
+     48000   308.73582      9434.9314      253.99806      9688.9294     -749.24359      108000       
+     49000   287.7378       9435.7286      236.72292      9672.4515     -41.11435       108000       
+     50000   327.40039      9433.4848      269.35347      9702.8382      126.97623      108000       
+     51000   284.80086      9439.3284      234.30668      9673.6351     -407.16294      108000       
+     52000   284.86822      9436.9475      234.3621       9671.3096     -708.87865      108000       
+     53000   305.29331      9425.0258      251.1659       9676.1917     -169.15924      108000       
+     54000   293.9019       9450.1202      241.79415      9691.9144      318.76731      108000       
+     55000   300.11513      9439.1223      246.90579      9686.0281     -146.67192      108000       
+     56000   306.24216      9448.5459      251.94652      9700.4924     -734.24508      108000       
+     57000   314.62475      9434.0573      258.84291      9692.9002     -405.298        108000       
+     58000   300.50702      9441.1858      247.2282       9688.414       209.66315      108000       
+     59000   298.12281      9442.4901      245.2667       9687.7568      117.39935      108000       
+     60000   288.74803      9441.691       237.55404      9679.2451     -557.42502      108000       
+     61000   306.57078      9446.1585      252.21688      9698.3754     -491.42262      108000       
+     62000   294.64937      9448.9618      242.40909      9691.3709     -17.25187       108000       
+     63000   274.47176      9467.3344      225.8089       9693.1433      8.8565508      108000       
+     64000   301.48852      9451.584       248.03569      9699.6197     -407.50542      108000       
+     65000   273.81188      9456.0263      225.26601      9681.2923     -637.50111      108000       
+     66000   281.07186      9446.0436      231.23882      9677.2824     -271.75814      108000       
+     67000   272.72349      9440.5784      224.37059      9664.949       104.28726      108000       
+     68000   296.53094      9468.6484      243.95706      9712.6055     -262.33288      108000       
+     69000   290.39008      9420.0286      238.90496      9658.9335     -582.21907      108000       
+     70000   282.42467      9459.1639      232.35179      9691.5157     -391.70671      108000       
+     71000   290.11511      9444.136       238.67874      9682.8147     -23.42686       108000       
+     72000   292.0244       9466.6132      240.24952      9706.8627     -138.03733      108000       
+     73000   311.40859      9452.897       256.19696      9709.094      -440.22767      108000       
+     74000   294.04476      9438.2489      241.91167      9680.1606     -452.95807      108000       
+     75000   302.65652      9443.7376      248.9966       9692.7342     -84.236179      108000       
+     76000   281.05038      9465.3862      231.22115      9696.6073      5.3136046      108000       
+     77000   298.31042      9437.1774      245.42104      9682.5984     -417.85749      108000       
+     78000   280.33526      9446.2532      230.63282      9676.8861     -692.94213      108000       
+     79000   289.53282      9442.928       238.19968      9681.1277     -61.321638      108000       
+     80000   296.16225      9444.1811      243.65374      9687.8348     -184.63724      108000       
+     81000   305.23772      9446.375       251.12016      9697.4952     -323.3863       108000       
+     82000   295.61156      9464.8876      243.20069      9708.0883     -312.9193       108000       
+     83000   285.19665      9438.07        234.63231      9672.7023     -430.74107      108000       
+     84000   304.48649      9428.3657      250.50212      9678.8678     -84.886024      108000       
+     85000   314.65058      9408.2322      258.86416      9667.0963     -96.644581      108000       
+     86000   287.85512      9441.3286      236.81944      9678.148      -602.641        108000       
+     87000   299.29427      9447.9874      246.23046      9694.2178     -417.36644      108000       
+     88000   301.4397       9429.4769      247.99552      9677.4725     -70.034684      108000       
+     89000   303.36944      9437.3757      249.58312      9686.9588     -187.38855      108000       
+     90000   314.11507      9433.8573      258.42359      9692.2809     -300.18496      108000       
+     91000   278.29402      9439.6692      228.95348      9668.6226     -512.67349      108000       
+     92000   313.23068      9456.0208      257.696        9713.7168      12.720316      108000       
+     93000   304.0141       9457.4343      250.11349      9707.5478     -95.716106      108000       
+     94000   305.93891      9460.9571      251.69703      9712.6541     -429.265        108000       
+     95000   288.27343      9448.3636      237.16358      9685.5271     -575.53728      108000       
+     96000   264.12957      9452.0543      217.30034      9669.3547     -206.0474       108000       
+     97000   313.82985      9428.374       258.18894      9686.5629      96.512111      108000       
+     98000   301.54028      9443.604       248.07827      9691.6823     -413.84903      108000       
+     99000   291.95156      9435.0892      240.18959      9675.2788     -656.02132      108000       
+    100000   304.67991      9442.8258      250.66125      9693.487      -199.85008      108000       
+Loop time of 50.9271 on 6 procs for 100000 steps with 277 atoms
+
+Performance: 8.483 ns/day, 2.829 hours/ns, 1963.593 timesteps/s, 543.915 katom-step/s
+99.4% CPU use with 6 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 3.6811     | 14.635     | 36.364     | 343.9 | 28.74
+Bond    | 0.29348    | 2.9784     | 8.3809     | 210.2 |  5.85
+Neigh   | 0.16937    | 0.17036    | 0.17184    |   0.2 |  0.33
+Comm    | 3.4562     | 30.381     | 43.865     | 301.4 | 59.66
+Output  | 0.076566   | 0.092122   | 0.10072    |   2.7 |  0.18
+Modify  | 2.2165     | 2.3533     | 2.482      |   6.9 |  4.62
+Other   |            | 0.3165     |            |       |  0.62
+
+Nlocal:        46.1667 ave         112 max          14 min
+Histogram: 4 0 0 0 0 0 0 0 0 2
+Nghost:        1707.33 ave        1966 max        1211 min
+Histogram: 2 0 0 0 0 0 0 0 0 4
+Neighs:              0 ave           0 max           0 min
+Histogram: 6 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0
+Ave special neighs/atom = 13.516245
+Neighbor list builds = 390
+Dangerous builds = 0
+
+# 6. Production step - GCMC
+variable tfac equal 3.0/3.0
+# variable xlo equal xlo+0.1
+# variable xhi equal xhi-0.1
+# variable ylo equal ylo+0.1
+# variable yhi equal yhi-0.1
+# variable zlo equal zlo+0.1
+# variable zhi equal zhi-0.1
+# region system block ${xlo} ${xhi} ${ylo} ${yhi} ${zlo} ${zhi}
+fix fgcmc H2 gcmc 100 100 0 2 65899 ${T} -0.5 0.1     tfac_insert ${tfac} group H2     pressure 113 #region system
+fix fgcmc H2 gcmc 100 100 0 2 65899 298 -0.5 0.1     tfac_insert ${tfac} group H2     pressure 113 
+fix fgcmc H2 gcmc 100 100 0 2 65899 298 -0.5 0.1     tfac_insert 1 group H2     pressure 113 
+run 40000
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+WARNING: Fix gcmc using full_energy option (src/MC/fix_gcmc.cpp:544)
+0 atoms in group FixGCMC:gcmc_exclusion_group:fgcmc
+Per MPI rank memory allocation (min/avg/max) = 14.35 | 14.56 | 14.96 Mbytes
+   Step          Temp          PotEng         KinEng         TotEng         Press          Volume    
+    100000   304.67991      9442.8258      250.66125      9693.487      -199.85008      108000       
+    101000   295.89128      9424.5041      334.27637      9758.7805      90.443497      108000       
+    102000   296.53971      9405.4527      369.48213      9774.9348     -126.79729      108000       
+    103000   293.91978      9392.0875      367.09388      9759.1814     -617.36955      108000       
+    104000   299.05349      9391.0209      368.15714      9759.178      -404.0666       108000       
+    105000   287.88871      9383.6516      359.56132      9743.2129      59.517153      108000       
+    106000   303.51351      9376.5037      369.12418      9745.6279     -59.876276      108000       
+    107000   275.38936      9379.1325      366.11399      9745.2464     -356.68709      108000       
+    108000   292.76516      9390.8548      359.54306      9750.3979     -467.52515      108000       
+    109000   301.88605      9372.5188      379.74301      9752.2618     -74.036346      108000       
+    110000   280.0082       9370.9398      341.37236      9712.3122      57.979158      108000       
+    111000   300.81512      9356.2776      359.56577      9715.8433     -362.90776      108000       
+    112000   286.05133      9393.7961      362.38249      9756.1786     -463.38624      108000       
+    113000   291.9519       9369.5057      367.24684      9736.7526     -181.78316      108000       
+    114000   299.98919      9381.4171      356.79011      9738.2072      69.781765      108000       
+    115000   282.48181      9356.8698      367.96475      9724.8346     -345.64234      108000       
+    116000   292.48462      9346.4627      382.73823      9729.2009     -515.56811      108000       
+    117000   304.3293       9342.0353      389.16642      9731.2017     -187.2208       108000       
+    118000   289.09025      9339.7197      374.84956      9714.5692     -42.793635      108000       
+    119000   278.1765       9355.2308      356.55226      9711.783      -177.48575      108000       
+    120000   276.40129      9361.4109      353.45299      9714.8639     -418.2113       108000       
+    121000   266.37201      9341.431       343.8039       9685.2349     -426.15         108000       
+    122000   274.9853       9358.1282      340.16677      9698.295      -14.501162      108000       
+    123000   307.11866      9345.7078      391.81791      9737.5257     -55.597399      108000       
+    124000   286.09702      9374.835       371.82117      9746.6562     -549.05936      108000       
+    125000   301.14084      9331.9608      383.29384      9715.2546     -379.11494      108000       
+    126000   300.07383      9337.154       378.35788      9715.5118     -195.10334      108000       
+    127000   316.61375      9359.1256      402.04408      9761.1697      55.535244      108000       
+    128000   292.07983      9327.8329      370.8903       9698.7232     -131.26819      108000       
+    129000   282.47379      9333.0003      360.37631      9693.3766     -644.79141      108000       
+    130000   322.92033      9339.5901      398.50156      9738.0916     -284.63506      108000       
+    131000   278.75387      9349.4481      349.81409      9699.2622      323.77096      108000       
+    132000   297.32555      9340.3037      385.52788      9725.8316     -230.31401      108000       
+    133000   307.40094      9370.2471      397.67585      9767.923      -552.85945      108000       
+    134000   278.8136       9356.7704      341.57814      9698.3485     -296.96633      108000       
+    135000   302.77465      9363.7489      386.27588      9750.0248      48.012845      108000       
+    136000   299.91249      9360.1122      378.15446      9738.2667     -61.83264       108000       
+    137000   300.00538      9347.5703      372.01176      9719.582      -411.18868      108000       
+    138000   308.26644      9341.2778      398.79552      9740.0733     -524.24364      108000       
+    139000   305.1873       9355.3655      373.8889       9729.2544      65.938156      108000       
+    140000   291.52476      9357.0671      364.97157      9722.0387      99.026097      108000       
+Loop time of 228.896 on 6 procs for 40000 steps with 421 atoms
+
+Performance: 0.755 ns/day, 31.791 hours/ns, 174.752 timesteps/s, 73.571 katom-step/s
+96.6% CPU use with 6 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 7.3566     | 27.891     | 60.292     | 390.4 | 12.18
+Bond    | 0.13368    | 1.2494     | 3.4915     | 134.8 |  0.55
+Neigh   | 0.51041    | 0.51124    | 0.51279    |   0.1 |  0.22
+Comm    | 3.6501     | 38.213     | 59.793     | 356.3 | 16.69
+Output  | 0.046265   | 0.064015   | 0.07223    |   3.4 |  0.03
+Modify  | 160.7      | 160.75     | 160.81     |   0.3 | 70.23
+Other   |            | 0.2192     |            |       |  0.10
+
+Nlocal:        70.1667 ave         137 max          33 min
+Histogram: 3 1 0 0 0 0 0 0 0 2
+Nghost:        2625.17 ave        2908 max        2086 min
+Histogram: 2 0 0 0 0 0 0 0 0 4
+Neighs:              0 ave           0 max           0 min
+Histogram: 6 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0
+Ave special neighs/atom = 8.8931116
+Neighbor list builds = 40800
+Dangerous builds = 0
+
+# After the number of hydrogen atoms has been equilibrated,
+# compute density profile for the hydrogen atoms along the absorbate direction
+compute cc1 H2 chunk/atom bin/1d z 0.0 0.1
+fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density${H}.profile
+fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density30.profile
+
+run 10000
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+Per MPI rank memory allocation (min/avg/max) = 14.77 | 14.97 | 15.37 Mbytes
+   Step          Temp          PotEng         KinEng         TotEng         Press          Volume    
+    140000   291.52476      9357.0671      364.97157      9722.0387      99.026097      108000       
+    141000   320.08319      9355.4977      405.49556      9760.9933     -365.62941      108000       
+    142000   333.4139       9348.6905      429.34039      9778.0309     -670.76058      108000       
+    143000   314.99941      9335.8233      415.95636      9751.7796     -165.06086      108000       
+    144000   286.40982      9330.7962      356.8605       9687.6567      288.96277      108000       
+    145000   314.94448      9354.0402      393.35288      9747.3931     -246.77912      108000       
+    146000   290.13561      9341.7039      348.53018      9690.2341     -595.06731      108000       
+    147000   311.32762      9350.7003      393.4756       9744.1759     -263.44456      108000       
+    148000   311.79261      9332.2587      396.85147      9729.1102      166.8026       108000       
+    149000   303.89589      9346.1267      381.36535      9727.492      -19.021838      108000       
+    150000   294.76677      9352.8792      369.90902      9722.7883     -537.82111      108000       
+Loop time of 61.9091 on 6 procs for 10000 steps with 422 atoms
+
+Performance: 0.698 ns/day, 34.394 hours/ns, 161.527 timesteps/s, 68.164 katom-step/s
+93.1% CPU use with 6 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.1045     | 7.2607     | 15.445     | 198.0 | 11.73
+Bond    | 0.03646    | 0.32576    | 0.90595    |  68.4 |  0.53
+Neigh   | 0.14038    | 0.14079    | 0.14141    |   0.1 |  0.23
+Comm    | 1.5262     | 10.282     | 15.691     | 178.0 | 16.61
+Output  | 0.013171   | 0.020622   | 0.023902   |   2.5 |  0.03
+Modify  | 43.783     | 43.811     | 43.838     |   0.3 | 70.77
+Other   |            | 0.0682     |            |       |  0.11
+
+Nlocal:        70.3333 ave         139 max          35 min
+Histogram: 4 0 0 0 0 0 0 0 0 2
+Nghost:        2608.83 ave        2899 max        2065 min
+Histogram: 2 0 0 0 0 0 0 0 0 4
+Neighs:              0 ave           0 max           0 min
+Histogram: 6 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 0
+Ave neighs/atom = 0
+Ave special neighs/atom = 8.8720379
+Neighbor list builds = 10200
+Dangerous builds = 0
+
+write_data     ensemble${H}.data
+write_data     ensemble30.data
+System init for write_data ...
+Generated 0 of 1 mixed pair_coeff terms from geometric mixing rule
+write_dump     all atom simulation_data/dumps/ensemble${H}.lammpstrj
+write_dump     all atom simulation_data/dumps/ensemble30.lammpstrj
+
+Total wall time: 0:05:41
