@@ -12,7 +12,6 @@ neighbor 1 bin
 neigh_modify delay 3 one 6000
 pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
 #kspace_style pppm 1.0e-4
-# No space style is needed for the absence of charges
 # *--* C-C parameters *--*
 bond_style harmonic
 angle_style harmonic

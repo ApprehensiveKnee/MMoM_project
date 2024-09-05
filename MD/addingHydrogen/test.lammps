@@ -12,7 +12,6 @@ neighbor 1 bin
 neigh_modify delay 3 one 6000
 pair_style hybrid lj/cut 14 sg 15 cb 30 # Fluid-fluid interactions have a cutoff of 15 Å, fluid-solid interactions have a cutoff of 30 Å
 #kspace_style pppm 1.0e-4
-# No space style is needed for the absence of charges
 # *--* C-C parameters *--*
 bond_style harmonic
 angle_style harmonic
@@ -28,7 +27,7 @@ include PARM.lammps
 
 # 4. Generate the initial hydrogen atoms
 lattice sc 3
-create_atoms 2 box ratio 0.05 428795
+create_atoms 2 box ratio 0.01 428795
 lattice none 1
 # Print the number of hydrogen atoms to file and delete the overlapping hydrogen atoms generated
 variable hydrogen atom "type==2"
@@ -82,9 +81,13 @@ fix fgcmc H2 gcmc 100 100 0 2 65899 ${T} -0.5 0.1 &
     tfac_insert ${tfac} group H2 &
     pressure 113 #region system
 run 40000
+# After the number of hydrogen atoms has been equilibrated,
+# compute density profile for the hydrogen atoms along the absorbate direction
+compute cc1 H2 chunk/atom bin/1d z 0.0 0.1
+fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density.profile
 
-# Compute density profile for the hydrogen atoms along the absorbate direction
-compute cc1 flow chunk/atom bin/1d z 0.0 0.1
+run 10000
+
 
 write_data     ensemble_test.data
 write_dump     all atom simulation_data/ensemble_test.lammpstrj
