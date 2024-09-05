@@ -24,6 +24,9 @@ improper_style harmonic
 # 3. Define potentials parameters
 read_data ../geometry/carbonPlatelets/simulation_data/test.data  extra/atom/types 1
 include PARM.lammps
+# Change the box dimension
+change_box all x final -15.0 15.0 y final -15.0 15.0 z final -15.0 15.0 units box
+reset_atoms id sort yes
 
 # 4. Generate the initial hydrogen atoms
 lattice sc 3

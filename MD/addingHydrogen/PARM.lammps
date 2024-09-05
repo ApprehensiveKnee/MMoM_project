@@ -45,7 +45,7 @@ variable P_h equal 0.81 # Å^3
 variable E_h equal 2.337e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 variable E_c equal 1.39254e5*(1/503.23) # K * 1/503.23 kcal/mol/K = kcal/mol
 
-variable epsilon equal 4*(5/11)*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol 
+variable epsilon equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_geo^6*(v_E_h+v_E_c)) # kcal/mol 
 # The formula taken from paper by Wang and Johnson, 1998 to construct epsilon does not seem to be consistent with the
 # results obtained from the LAMMPS simulation. We will be using the value of epsilon obtained from the simplified 
 # version of the CB potential as 12-6 lennard-jones potential, presented in the paper "Theoretical investigation of the
