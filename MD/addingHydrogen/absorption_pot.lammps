@@ -7,7 +7,7 @@ log ./logs/log.${name}
 variable pre equal 112 # desired pressure (Atm)
 variable tem equal 300 # desired temperature (K)
 
-variable k1 equal 1. # spring constant
+variable k1 equal 1.7 # spring constant
 variable k2 equal 3.5 # spring constant
 
 units real
@@ -45,7 +45,7 @@ velocity        all create ${tem} 48 rot yes mom yes dist gaussian # Initialize 
 fix             mynpt all npt temp ${tem} ${tem} 100 x ${pre} ${pre} 1000 y ${pre} ${pre} 1000 # Apply NPT ensemble to the system
 
 thermo          10000
-dump            dump all atom 1000 simulation_data/absorption_pot.lammpstrj
+dump            dump all atom 1000 simulation_data/dumps/absorption_pot.lammpstrj
 
 run             20000
 unfix           mynpt
