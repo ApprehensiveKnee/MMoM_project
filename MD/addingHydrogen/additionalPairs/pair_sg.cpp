@@ -230,22 +230,22 @@ void PairSilveraGoldman::compute(int eflag, int vflag)
           r10 = r9*r;
           r11 = r10*r;
           r12 = r11*r;
-          sg1 = exp(alpha[itype][jtype] - beta[itype][jtype]*r - gamma[itype][jtype]*r*r)*(beta[itype][jtype]/r + 2*gamma[itype][jtype]);
-          afct = exp(-gamma[itype][jtype]*r*r - beta[itype][jtype]*r + alpha[itype][jtype]);
+          afct = exp(- gamma[itype][jtype]*r*r - beta[itype][jtype]*r + alpha[itype][jtype]);
+          sg1 = afct*(beta[itype][jtype]/r + 2*gamma[itype][jtype]);
           sg2 = -6*c6[itype][jtype]/r8 - 8*c8[itype][jtype]/r10 - 10*c10[itype][jtype]/r12 + 9*c9[itype][jtype]/r11;
           double fc = exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1));
           if (r <= rc[itype][jtype])
           {
               bfct = - (c6[itype][jtype]/r6 + c8[itype][jtype]/r8 + c10[itype][jtype]/r10*fc - c9[itype][jtype]/r9)*fc;
-              sg2 = sg2*fc + bfct*exp(-(rc[itype][jtype]/r - 1)*(rc[itype][jtype]/r - 1))*(rc[itype][jtype]/r - 1)*(2*rc[itype][jtype]/pow(r,3));
+              sg2 = sg2*fc + bfct*fc*(rc[itype][jtype]/r - 1)*(2*rc[itype][jtype]/pow(r,3));
 
           }
           else
           {
               fc = 1.0;
               bfct = - (c6[itype][jtype]/r6 + c8[itype][jtype]/r8 + c10[itype][jtype]/r10*fc - c9[itype][jtype]/r9)*fc;
-
           };
+          
           fpair = sg1 + sg2;
           fpair *= factor_lj;
           // Since the parameters for the SG potential are given for atomic units, convert to eV/Å and then to (kcal/mol)/Å

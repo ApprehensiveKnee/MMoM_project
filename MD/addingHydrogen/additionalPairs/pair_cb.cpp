@@ -214,13 +214,13 @@ void PairCrowellBrown::compute(int eflag, int vflag)
                 bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
                 cb1 = afct*12/(r*r);
                 cb2 = bfct*6/(r*r);
-                cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
+                cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
 
                 fpair_xy = epsilon[itype][jtype] * (cb1 + cb2 - cb3*delz);
                 fpair_z = epsilon[itype][jtype] * (cb1*delz + cb2*delz + cb3*(r*r-delz*delz));
                 fpair_xy *= factor_lj;
                 fpair_z *= factor_lj;
-                fpair = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2))/r;
+                fpair = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2));
 
                 f[i][0] += delx * fpair_xy;
                 f[i][1] += dely * fpair_xy;
@@ -271,11 +271,11 @@ double PairCrowellBrown::single(int i, int j, int itype, int jtype, double rsq,
     bfct = -pow(sigma[itype][jtype] / r, 6) * (3 * (P_par[itype][jtype] - P_perp[itype][jtype]) * cos_theta * cos_theta + (P_par[itype][jtype] + 5 * P_perp[itype][jtype])) / (4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]);
     cb1 = afct*12/(r*r);
     cb2 = bfct*6/(r*r);
-    cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype])*pow(r,3));
+    cb3 = pow(sigma[itype][jtype] / r, 6) * 6 *(P_par[itype][jtype] - P_perp[itype][jtype])*(delz/pow(r,4))/((4 * P_par[itype][jtype] + 2 * P_perp[itype][jtype]));
 
     fpair_xy = epsilon[itype][jtype] * (cb1 + cb2 - cb3*delz);
     fpair_z = epsilon[itype][jtype] * (cb1*delz + cb2*delz + cb3*(r*r-delz*delz));
-    fforce = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2))/r;
+    fforce = sqrt(pow(fpair_xy*delx, 2)+ pow(fpair_xy*dely, 2) + pow(fpair_z, 2));
     fforce *= factor_lj;
 
     // Compute the offset for each pair of atoms if needed

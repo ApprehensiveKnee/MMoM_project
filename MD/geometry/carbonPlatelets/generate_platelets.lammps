@@ -8,6 +8,7 @@
 #//     Author: Edoardo Cabiati
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 variable realistic equal "-1"
 variable tests equal "0"
 variable name string generate_platelets
@@ -30,39 +31,32 @@ special_bonds lj 0.0 0.0 0.5
 # ---------------------------]* C-C POTENTIALS *[----------------------------
 
 
-# Specify some variables:
-# - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
-variable        Lx equal "30"            # Define the in-plane dimensions
-variable        Ly equal "30"
-variable        H equal "9"         # Define the out-of-plane dimension
+# Import the variables for the simulation box dimensions
+include dimensions.lammps
+
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
 if "${tests}==1" then "variable max_layers equal 2." &
                     "variable H equal 15" &
                     "variable Lz equal 15" &
                     "print 'Importing restricted.data'" &
                     "read_data templates/restricted.data" & 
-                    "jump SELF done_test"
+                    "jump SELF done_test" 
 if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'" &
     "quit"
 if "${H} == 9" then "variable max_layers equal 4."  &  
-                    "variable Lz equal 18" &
                     "print 'Importing platelet_n4.data'" &
                     "read_data templates/platelet_n4.data" 
 if  "${H} == 15"  then "variable max_layers equal 2." &
-                    "variable Lz equal 15" &
                     "print 'Importing platelet_n2.data'" &
                     "read_data templates/platelet_n2.data" 
 if "${H} == 30" then "variable max_layers equal 1." &
-                    "variable Lz equal 15" &
                     "print 'Importing platelet_n1.data'" &
                     "read_data templates/platelet_n1.data" 
 if "${H} == 60" then "variable max_layers equal 1." &
-                    "variable Lz equal 30" &
                     "print 'Importing platelet_n1.data'" &
-                    "read_data templates/platelet_n1.data"
-label done_test            
-
-
+                    "read_data templates/platelet_n1.data"  
+label done_test
+         
 # ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
 
 include ../carbonBonds/carbonParameters.lammps
