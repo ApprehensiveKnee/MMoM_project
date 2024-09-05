@@ -53,5 +53,4 @@ variable epsilon_CB equal 4*v_E_h*v_E_c*v_P_h*(v_P_par+v_P_perp/2)/(v_sigma_CH_g
 # variable sigma equal 2.97 # Å
 
 pair_coeff 1 2 cb ${epsilon_CB} ${sigma_CH_geo} ${P_par} ${P_perp} # C-H potential 
-#pair_coeff 1 2 lj/cut 0.3025 2.065
 # //////////////////////////////////////    C-H potentials    //////////////////////////////////////

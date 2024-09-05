@@ -9,7 +9,7 @@
 #//     Date: 2024-07-02
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 variable realistic equal "-1"
-variable tests equal "1"
+variable tests equal "0"
 variable name string generate_platelets
 log simulation_data/log.${name}
 
@@ -34,7 +34,7 @@ special_bonds lj 0.0 0.0 0.5
 # - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
 variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
-variable        H equal "15"         # Define the out-of-plane dimension
+variable        H equal "9"         # Define the out-of-plane dimension
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
 if "${tests}==1" then "variable max_layers equal 2." &
                     "variable H equal 15" &

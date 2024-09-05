@@ -20,20 +20,21 @@ special_bonds lj 0.0 0.0 0.5
 # - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
 variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
-variable        H equal "15"         # Define the out-of-plane dimension
+variable        H equal "9"         # Define the out-of-plane dimension
 # Define the number of graphite platelets and corresponding Lz dimension for the simulation box
 if "${tests}==1" then "variable max_layers equal 2."                     "variable H equal 15"                     "variable Lz equal 15"                     "print 'Importing restricted.data'"                     "read_data templates/restricted.data"                     "jump SELF done_test"
-variable max_layers equal 2.
-variable H equal 15
-variable Lz equal 15
-print 'Importing restricted.data'
-Importing restricted.data
-read_data templates/restricted.data
+if "$H != 9 && $H != 15 && $H != 30 && $H != 60" then "print 'Invalid H value. Please use 9, 15, 30, or 60'"     "quit"
+if "${H} == 9" then "variable max_layers equal 4."                      "variable Lz equal 18"                     "print 'Importing platelet_n4.data'"                     "read_data templates/platelet_n4.data"
+variable max_layers equal 4.
+variable Lz equal 18
+print 'Importing platelet_n4.data'
+Importing platelet_n4.data
+read_data templates/platelet_n4.data
 Reading data file ...
-  orthogonal box = (-26.92994 -25.746 -28.325) to (33.07006 34.254 31.675)
+  orthogonal box = (-19.561795 -17.238 -24.975) to (40.438205 42.762 35.025)
   1 by 1 by 1 MPI processor grid
   reading atoms ...
-  64 atoms
+  960 atoms
   scanning bonds ...
   2 = max bonds/atom
   scanning angles ...
@@ -42,16 +43,16 @@ Reading data file ...
   8 = max dihedrals/atom
   scanning impropers ...
   2 = max impropers/atom
-  orthogonal box = (-26.92994 -25.746 -28.325) to (33.07006 34.254 31.675)
+  orthogonal box = (-19.561795 -17.238 -24.975) to (40.438205 42.762 35.025)
   1 by 1 by 1 MPI processor grid
   reading bonds ...
-  80 bonds
+  1352 bonds
   reading angles ...
-  132 angles
+  2536 angles
   reading dihedrals ...
-  218 dihedrals
+  4788 dihedrals
   reading impropers ...
-  36 impropers
+  792 impropers
 Finding 1-2 1-3 1-4 neighbors ...
   special bond factors lj:    0        0        0.5     
   special bond factors coul:  0        0        0       
@@ -59,9 +60,12 @@ Finding 1-2 1-3 1-4 neighbors ...
      6 = max # of 1-3 neighbors
     18 = max # of 1-4 neighbors
     18 = max # of special neighbors
-  special bonds CPU = 0.000 seconds
-  read_data CPU = 0.006 seconds
-jump SELF done_test
+  special bonds CPU = 0.001 seconds
+  read_data CPU = 0.036 seconds
+if  "${H} == 15"  then "variable max_layers equal 2."                     "variable Lz equal 15"                     "print 'Importing platelet_n2.data'"                     "read_data templates/platelet_n2.data"
+if "${H} == 30" then "variable max_layers equal 1."                     "variable Lz equal 15"                     "print 'Importing platelet_n1.data'"                     "read_data templates/platelet_n1.data"
+if "${H} == 60" then "variable max_layers equal 1."                     "variable Lz equal 30"                     "print 'Importing platelet_n1.data'"                     "read_data templates/platelet_n1.data"
+label done_test
 
 
 # ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
@@ -94,14 +98,14 @@ improper_coeff 1 5 180
 
 # First, center the platelets
 group           carbon_atoms type 1
-64 atoms in group carbon_atoms
+960 atoms in group carbon_atoms
 variable        carbon_xcm equal -1*xcm(carbon_atoms,x)
 variable        carbon_ycm equal -1*xcm(carbon_atoms,y)
 print          "Center of mass of the platelet: ${carbon_xcm} ${carbon_ycm}"
-Center of mass of the platelet: -3.07006 -4.254
+Center of mass of the platelet: -10.4382043499999 -12.7620000208333
 displace_atoms  carbon_atoms move ${carbon_xcm} ${carbon_ycm} 0
-displace_atoms  carbon_atoms move -3.07006 ${carbon_ycm} 0
-displace_atoms  carbon_atoms move -3.07006 -4.254 0
+displace_atoms  carbon_atoms move -10.4382043499999 ${carbon_ycm} 0
+displace_atoms  carbon_atoms move -10.4382043499999 -12.7620000208333 0
 Displacing atoms ...
 
 
@@ -110,17 +114,17 @@ label           setup_loop
 variable        groups index grp_1 grp_2 grp_3 grp_4
 variable        regions index reg_1 reg_2 reg_3 reg_4
 variable        a loop ${max_layers}
-variable        a loop 2
+variable        a loop 4
 # For each time the loop is executed, bound the atoms in the successive, stacked layers and
 # translate them to the correct position in the simulation box
     variable    quote0 equal 3.35*(v_a-1)
     variable    quote1 equal 3.35*(v_a-1)+0.1
     variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+$H/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+15/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+15/2-0+$H*($a-1)
-    variable    quote equal -1*15+15/2-0+15*($a-1)
-    variable    quote equal -1*15+15/2-0+15*(1-1)
+    variable    quote equal -1*18+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-0+$H*($a-1)
+    variable    quote equal -1*18+9/2-0+9*($a-1)
+    variable    quote equal -1*18+9/2-0+9*(1-1)
     region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
     region      reg_1 block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
     region      reg_1 block -30 ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
@@ -132,10 +136,10 @@ variable        a loop 2
     group       ${groups} region ${regions}
     group       grp_1 region ${regions}
     group       grp_1 region reg_1
-32 atoms in group grp_1
+240 atoms in group grp_1
     displace_atoms ${groups} move 0 0 ${quote} units box
     displace_atoms grp_1 move 0 0 ${quote} units box
-    displace_atoms grp_1 move 0 0 -7.5 units box
+    displace_atoms grp_1 move 0 0 -13.5 units box
 Displacing atoms ...
 # Next iteration
 next            a
@@ -146,17 +150,17 @@ jump            SELF setup_loop
 variable        groups index grp_1 grp_2 grp_3 grp_4
 variable        regions index reg_1 reg_2 reg_3 reg_4
 variable        a loop ${max_layers}
-variable        a loop 2
+variable        a loop 4
 # For each time the loop is executed, bound the atoms in the successive, stacked layers and
 # translate them to the correct position in the simulation box
     variable    quote0 equal 3.35*(v_a-1)
     variable    quote1 equal 3.35*(v_a-1)+0.1
     variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+$H/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+15/2-${quote0}+$H*($a-1)
-    variable    quote equal -1*15+15/2-3.35+$H*($a-1)
-    variable    quote equal -1*15+15/2-3.35+15*($a-1)
-    variable    quote equal -1*15+15/2-3.35+15*(2-1)
+    variable    quote equal -1*18+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-3.35+$H*($a-1)
+    variable    quote equal -1*18+9/2-3.35+9*($a-1)
+    variable    quote equal -1*18+9/2-3.35+9*(2-1)
     region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
     region      reg_2 block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
     region      reg_2 block -30 ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
@@ -168,10 +172,82 @@ variable        a loop 2
     group       ${groups} region ${regions}
     group       grp_2 region ${regions}
     group       grp_2 region reg_2
-32 atoms in group grp_2
+240 atoms in group grp_2
     displace_atoms ${groups} move 0 0 ${quote} units box
     displace_atoms grp_2 move 0 0 ${quote} units box
-    displace_atoms grp_2 move 0 0 4.15 units box
+    displace_atoms grp_2 move 0 0 -7.85 units box
+Displacing atoms ...
+# Next iteration
+next            a
+next            regions
+next            groups
+jump            SELF setup_loop
+# Define the variables for the restucuring of the simulation settings
+variable        groups index grp_1 grp_2 grp_3 grp_4
+variable        regions index reg_1 reg_2 reg_3 reg_4
+variable        a loop ${max_layers}
+variable        a loop 4
+# For each time the loop is executed, bound the atoms in the successive, stacked layers and
+# translate them to the correct position in the simulation box
+    variable    quote0 equal 3.35*(v_a-1)
+    variable    quote1 equal 3.35*(v_a-1)+0.1
+    variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-6.7+$H*($a-1)
+    variable    quote equal -1*18+9/2-6.7+9*($a-1)
+    variable    quote equal -1*18+9/2-6.7+9*(3-1)
+    region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_3 block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_3 block -30 ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_3 block -30 30 -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_3 block -30 30 -30 ${Ly} ${quote0} ${quote1} units box
+    region      reg_3 block -30 30 -30 30 ${quote0} ${quote1} units box
+    region      reg_3 block -30 30 -30 30 6.7 ${quote1} units box
+    region      reg_3 block -30 30 -30 30 6.7 6.8 units box
+    group       ${groups} region ${regions}
+    group       grp_3 region ${regions}
+    group       grp_3 region reg_3
+240 atoms in group grp_3
+    displace_atoms ${groups} move 0 0 ${quote} units box
+    displace_atoms grp_3 move 0 0 ${quote} units box
+    displace_atoms grp_3 move 0 0 -2.2 units box
+Displacing atoms ...
+# Next iteration
+next            a
+next            regions
+next            groups
+jump            SELF setup_loop
+# Define the variables for the restucuring of the simulation settings
+variable        groups index grp_1 grp_2 grp_3 grp_4
+variable        regions index reg_1 reg_2 reg_3 reg_4
+variable        a loop ${max_layers}
+variable        a loop 4
+# For each time the loop is executed, bound the atoms in the successive, stacked layers and
+# translate them to the correct position in the simulation box
+    variable    quote0 equal 3.35*(v_a-1)
+    variable    quote1 equal 3.35*(v_a-1)+0.1
+    variable    quote equal -1*${Lz}+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+$H/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-${quote0}+$H*($a-1)
+    variable    quote equal -1*18+9/2-10.05+$H*($a-1)
+    variable    quote equal -1*18+9/2-10.05+9*($a-1)
+    variable    quote equal -1*18+9/2-10.05+9*(4-1)
+    region      ${regions} block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_4 block -${Lx} ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_4 block -30 ${Lx} -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_4 block -30 30 -${Ly} ${Ly} ${quote0} ${quote1} units box
+    region      reg_4 block -30 30 -30 ${Ly} ${quote0} ${quote1} units box
+    region      reg_4 block -30 30 -30 30 ${quote0} ${quote1} units box
+    region      reg_4 block -30 30 -30 30 10.05 ${quote1} units box
+    region      reg_4 block -30 30 -30 30 10.05 10.15 units box
+    group       ${groups} region ${regions}
+    group       grp_4 region ${regions}
+    group       grp_4 region reg_4
+240 atoms in group grp_4
+    displace_atoms ${groups} move 0 0 ${quote} units box
+    displace_atoms grp_4 move 0 0 ${quote} units box
+    displace_atoms grp_4 move 0 0 3.45 units box
 Displacing atoms ...
 # Next iteration
 next            a
@@ -184,20 +260,13 @@ change_box      all x final -30 ${Lx} y final -${Ly} ${Ly} z final -${Lz} ${Lz} 
 change_box      all x final -30 30 y final -${Ly} ${Ly} z final -${Lz} ${Lz} units box
 change_box      all x final -30 30 y final -30 ${Ly} z final -${Lz} ${Lz} units box
 change_box      all x final -30 30 y final -30 30 z final -${Lz} ${Lz} units box
-change_box      all x final -30 30 y final -30 30 z final -15 ${Lz} units box
-change_box      all x final -30 30 y final -30 30 z final -15 15 units box
+change_box      all x final -30 30 y final -30 30 z final -18 ${Lz} units box
+change_box      all x final -30 30 y final -30 30 z final -18 18 units box
 Changing box ...
-  orthogonal box = (-30 -25.746 -28.325) to (30 34.254 31.675)
-  orthogonal box = (-30 -30 -28.325) to (30 30 31.675)
-  orthogonal box = (-30 -30 -15) to (30 30 15)
+  orthogonal box = (-30 -17.238 -24.975) to (30 42.762 35.025)
+  orthogonal box = (-30 -30 -24.975) to (30 30 35.025)
+  orthogonal box = (-30 -30 -18) to (30 30 18)
 if "${tests}==1" then "change_box all x final -12.5 12.5 y final -12.5 12.5 z final -${Lz} ${Lz} units box"
-change_box all x final -12.5 12.5 y final -12.5 12.5 z final -${Lz} ${Lz} units box
-change_box all x final -12.5 12.5 y final -12.5 12.5 z final -15 ${Lz} units box
-change_box all x final -12.5 12.5 y final -12.5 12.5 z final -15 15 units box
-Changing box ...
-  orthogonal box = (-12.5 -30 -15) to (12.5 30 15)
-  orthogonal box = (-12.5 -12.5 -15) to (12.5 12.5 15)
-  orthogonal box = (-12.5 -12.5 -15) to (12.5 12.5 15)
 reset_atoms     id sort yes
 Resetting atom IDs ...
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
@@ -206,7 +275,7 @@ Neighbor list info ...
   max neighbors/atom: 2000, page size: 100000
   master list distance cutoff = 16
   ghost atom cutoff = 16
-  binsize = 8, bins = 4 4 4
+  binsize = 8, bins = 8 8 5
   1 neighbor lists, perpetual/occasional/extra = 1 0 0
   (1) pair lj/cut, perpetual
       attributes: half, newton on
@@ -220,7 +289,7 @@ Finding 1-2 1-3 1-4 neighbors ...
      6 = max # of 1-3 neighbors
     18 = max # of 1-4 neighbors
     18 = max # of special neighbors
-  special bonds CPU = 0.000 seconds
+  special bonds CPU = 0.001 seconds
 
 
 
@@ -236,8 +305,7 @@ timestep 1
 variable        T equal 298
 variable        Tstart equal 600
 if "${realistic} ==-1 && ${tests}==0" then "dump final_dump all atom 100 simulation_data/final.lammpstrj"                                     "jump SELF equilibration"
-if "${realistic} ==-1 && ${tests}==1" then "dump final_dump all atom 100 simulation_data/test.lammpstrj"                                     "jump SELF equilibration"
-dump final_dump all atom 100 simulation_data/test.lammpstrj
+dump final_dump all atom 100 simulation_data/final.lammpstrj
 jump SELF equilibration
 minimize        1.0e-4 1.0e-6 10 10
 
@@ -260,44 +328,44 @@ Your simulation uses code contributions which should be cited:
 CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
 
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 12.23 | 12.23 | 12.23 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 12.82 | 12.82 | 12.82 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-         0   1821.7397      0              1821.7397      0              25             25             30            -1536.2112             64 
-         5   1816.3394      0              1816.3394      0              25             25             30            -45.267685             64 
-Loop time of 0.000812209 on 1 procs for 5 steps with 64 atoms
+         0   39845.611      0              39845.611      0              60             60             36            -3443.7925            960 
+         5   39806.89       0              39806.89       0              60             60             36            -1761.2576            960 
+Loop time of 0.0371664 on 1 procs for 5 steps with 960 atoms
 
-75.8% CPU use with 1 MPI tasks x no OpenMP threads
+98.3% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = max force evaluations
   Energy initial, next-to-last, final = 
-      1821.73972662849   1816.58053905929   1816.33937972196
-  Force two-norm initial, final = 76.419664 14.436794
-  Force max component initial, final = 14.7272 3.6595288
-  Final line search alpha, max atom move = 0.016209547 0.059319304
+      39845.6107782128    39813.028095932   39806.8904482584
+  Force two-norm initial, final = 191.6585 106.2726
+  Force max component initial, final = 14.734177 9.640328
+  Final line search alpha, max atom move = 0.0077132896 0.074358641
   Iterations, force evaluations = 5 10
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.00012687 | 0.00012687 | 0.00012687 |   0.0 | 15.62
-Bond    | 0.00036208 | 0.00036208 | 0.00036208 |   0.0 | 44.58
+Pair    | 0.028573   | 0.028573   | 0.028573   |   0.0 | 76.88
+Bond    | 0.0077994  | 0.0077994  | 0.0077994  |   0.0 | 20.99
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 3.0043e-05 | 3.0043e-05 | 3.0043e-05 |   0.0 |  3.70
+Comm    | 4.2167e-05 | 4.2167e-05 | 4.2167e-05 |   0.0 |  0.11
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0002932  |            |       | 36.10
+Other   |            | 0.0007521  |            |       |  2.02
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 velocity        all create ${T} 123456 dist gaussian
@@ -305,79 +373,79 @@ velocity        all create 298 123456 dist gaussian
 run 500
 WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 12.1 | 12.1 | 12.1 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 12.73 | 12.73 | 12.73 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-         5   1816.3394      55.961728      1872.3011      298            25             25             30             91.166341             64 
-       500   1816.3394      55.961728      1872.3011      298            25             25             30             91.166341             64 
-       505   1816.3394      55.961728      1872.3011      298            25             25             30             91.166341             64 
-Loop time of 0.0184635 on 1 procs for 500 steps with 64 atoms
+         5   39806.89       851.86186      40658.752      298            60             60             36            -1460.7905            960 
+       500   39806.89       851.86186      40658.752      298            60             60             36            -1460.7905            960 
+       505   39806.89       851.86186      40658.752      298            60             60             36            -1460.7905            960 
+Loop time of 0.918441 on 1 procs for 500 steps with 960 atoms
 
-Performance: 2339.751 ns/day, 0.010 hours/ns, 27080.456 timesteps/s, 1.733 Matom-step/s
-98.6% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 47.036 ns/day, 0.510 hours/ns, 544.401 timesteps/s, 522.625 katom-step/s
+98.5% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0032827  | 0.0032827  | 0.0032827  |   0.0 | 17.78
-Bond    | 0.013319   | 0.013319   | 0.013319   |   0.0 | 72.14
+Pair    | 0.62137    | 0.62137    | 0.62137    |   0.0 | 67.66
+Bond    | 0.29084    | 0.29084    | 0.29084    |   0.0 | 31.67
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.0011133  | 0.0011133  | 0.0011133  |   0.0 |  6.03
-Output  | 0.00030079 | 0.00030079 | 0.00030079 |   0.0 |  1.63
-Modify  | 4.4081e-05 | 4.4081e-05 | 4.4081e-05 |   0.0 |  0.24
-Other   |            | 0.0004035  |            |       |  2.19
+Comm    | 0.0015554  | 0.0015554  | 0.0015554  |   0.0 |  0.17
+Output  | 0.0027049  | 0.0027049  | 0.0027049  |   0.0 |  0.29
+Modify  | 0.0001094  | 0.0001094  | 0.0001094  |   0.0 |  0.01
+Other   |            | 0.001859   |            |       |  0.20
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 minimize        1.0e-4 1.0e-6 10 10
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 13.23 | 13.23 | 13.23 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 13.85 | 13.85 | 13.85 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-       505   1816.3394      55.961728      1872.3011      298            25             25             30             91.166341             64 
-       506   1816.283       55.961728      1872.2447      298            25             25             30             91.221847             64 
-Loop time of 0.000223209 on 1 procs for 1 steps with 64 atoms
+       505   39806.89       851.86186      40658.752      298            60             60             36            -1460.7905            960 
+       506   39803.937      851.86186      40655.799      298            60             60             36            -1466.804             960 
+Loop time of 0.0110819 on 1 procs for 1 steps with 960 atoms
 
-91.8% CPU use with 1 MPI tasks x no OpenMP threads
+97.2% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
   Energy initial, next-to-last, final = 
-      1816.33937972196   1816.33937972196   1816.28299249785
-  Force two-norm initial, final = 14.436794 10.082203
-  Force max component initial, final = 3.6595288 2.1397766
-  Final line search alpha, max atom move = 0.027325922 0.058471368
+      39806.8904482584   39806.8904482584   39803.9370032021
+  Force two-norm initial, final = 106.2726 75.903691
+  Force max component initial, final = 9.640328 5.8353105
+  Final line search alpha, max atom move = 0.010373091 0.060530208
   Iterations, force evaluations = 1 2
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 3.6916e-05 | 3.6916e-05 | 3.6916e-05 |   0.0 | 16.54
-Bond    | 0.00010358 | 0.00010358 | 0.00010358 |   0.0 | 46.41
+Pair    | 0.008265   | 0.008265   | 0.008265   |   0.0 | 74.58
+Bond    | 0.0022018  | 0.0022018  | 0.0022018  |   0.0 | 19.87
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 7.667e-06  | 7.667e-06  | 7.667e-06  |   0.0 |  3.43
+Comm    | 1.4207e-05 | 1.4207e-05 | 1.4207e-05 |   0.0 |  0.13
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 7.504e-05  |            |       | 33.62
+Other   |            | 0.0006008  |            |       |  5.42
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 velocity        all create ${T} 1234567 dist gaussian
@@ -385,79 +453,79 @@ velocity        all create 298 1234567 dist gaussian
 run 500
 WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 12.1 | 12.1 | 12.1 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 12.73 | 12.73 | 12.73 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-       506   1816.283       55.961728      1872.2447      298            25             25             30             91.221847             64 
-      1000   1816.283       55.961728      1872.2447      298            25             25             30             91.221847             64 
-      1006   1816.283       55.961728      1872.2447      298            25             25             30             91.221847             64 
-Loop time of 0.0187659 on 1 procs for 500 steps with 64 atoms
+       506   39803.937      851.86186      40655.799      298            60             60             36            -1466.804             960 
+      1000   39803.937      851.86186      40655.799      298            60             60             36            -1466.804             960 
+      1006   39803.937      851.86186      40655.799      298            60             60             36            -1466.804             960 
+Loop time of 0.92108 on 1 procs for 500 steps with 960 atoms
 
-Performance: 2302.051 ns/day, 0.010 hours/ns, 26644.108 timesteps/s, 1.705 Matom-step/s
-97.0% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 46.901 ns/day, 0.512 hours/ns, 542.841 timesteps/s, 521.127 katom-step/s
+98.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0032019  | 0.0032019  | 0.0032019  |   0.0 | 17.06
-Bond    | 0.013642   | 0.013642   | 0.013642   |   0.0 | 72.70
+Pair    | 0.62314    | 0.62314    | 0.62314    |   0.0 | 67.65
+Bond    | 0.29158    | 0.29158    | 0.29158    |   0.0 | 31.66
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.0011239  | 0.0011239  | 0.0011239  |   0.0 |  5.99
-Output  | 0.00034692 | 0.00034692 | 0.00034692 |   0.0 |  1.85
-Modify  | 4.3545e-05 | 4.3545e-05 | 4.3545e-05 |   0.0 |  0.23
-Other   |            | 0.0004072  |            |       |  2.17
+Comm    | 0.0015974  | 0.0015974  | 0.0015974  |   0.0 |  0.17
+Output  | 0.0027191  | 0.0027191  | 0.0027191  |   0.0 |  0.30
+Modify  | 0.00011297 | 0.00011297 | 0.00011297 |   0.0 |  0.01
+Other   |            | 0.001929   |            |       |  0.21
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 minimize        1.0e-4 1.0e-6 10 10
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 13.23 | 13.23 | 13.23 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 13.85 | 13.85 | 13.85 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-      1006   1816.283       55.961728      1872.2447      298            25             25             30             91.221847             64 
-      1007   1816.2552      55.961728      1872.2169      298            25             25             30             95.105314             64 
-Loop time of 0.000197167 on 1 procs for 1 steps with 64 atoms
+      1006   39803.937      851.86186      40655.799      298            60             60             36            -1466.804             960 
+      1007   39802.519      851.86186      40654.381      298            60             60             36            -1464.327             960 
+Loop time of 0.00928021 on 1 procs for 1 steps with 960 atoms
 
-95.4% CPU use with 1 MPI tasks x no OpenMP threads
+97.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
   Energy initial, next-to-last, final = 
-      1816.28299249785   1816.28299249785   1816.25520197851
-  Force two-norm initial, final = 10.082203 8.4567669
-  Force max component initial, final = 2.1397766 1.6667451
-  Final line search alpha, max atom move = 0.046733852 0.077893419
+      39803.9370032021   39803.9370032021   39802.5190579947
+  Force two-norm initial, final = 75.903691 64.311123
+  Force max component initial, final = 5.8353105 5.4285948
+  Final line search alpha, max atom move = 0.017137049 0.093030093
   Iterations, force evaluations = 1 2
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 3.5376e-05 | 3.5376e-05 | 3.5376e-05 |   0.0 | 17.94
-Bond    | 0.00010217 | 0.00010217 | 0.00010217 |   0.0 | 51.82
+Pair    | 0.0064777  | 0.0064777  | 0.0064777  |   0.0 | 69.80
+Bond    | 0.0022436  | 0.0022436  | 0.0022436  |   0.0 | 24.18
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 6.999e-06  | 6.999e-06  | 6.999e-06  |   0.0 |  3.55
+Comm    | 1.6959e-05 | 1.6959e-05 | 1.6959e-05 |   0.0 |  0.18
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 5.262e-05  |            |       | 26.69
+Other   |            | 0.0005419  |            |       |  5.84
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 velocity        all create ${T} 12345678 dist gaussian
@@ -465,42 +533,42 @@ velocity        all create 298 12345678 dist gaussian
 run 500
 WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-Per MPI rank memory allocation (min/avg/max) = 12.1 | 12.1 | 12.1 Mbytes
+Per MPI rank memory allocation (min/avg/max) = 12.73 | 12.73 | 12.73 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-      1007   1816.2552      55.961728      1872.2169      298            25             25             30             95.105314             64 
-      1500   1816.2552      55.961728      1872.2169      298            25             25             30             95.105314             64 
-      1507   1816.2552      55.961728      1872.2169      298            25             25             30             95.105314             64 
-Loop time of 0.0191564 on 1 procs for 500 steps with 64 atoms
+      1007   39802.519      851.86186      40654.381      298            60             60             36            -1464.327             960 
+      1500   39802.519      851.86186      40654.381      298            60             60             36            -1464.327             960 
+      1507   39802.519      851.86186      40654.381      298            60             60             36            -1464.327             960 
+Loop time of 0.914471 on 1 procs for 500 steps with 960 atoms
 
-Performance: 2255.119 ns/day, 0.011 hours/ns, 26100.914 timesteps/s, 1.670 Matom-step/s
-95.3% CPU use with 1 MPI tasks x no OpenMP threads
+Performance: 47.240 ns/day, 0.508 hours/ns, 546.764 timesteps/s, 524.894 katom-step/s
+98.4% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0033078  | 0.0033078  | 0.0033078  |   0.0 | 17.27
-Bond    | 0.013748   | 0.013748   | 0.013748   |   0.0 | 71.77
+Pair    | 0.61982    | 0.61982    | 0.61982    |   0.0 | 67.78
+Bond    | 0.2881     | 0.2881     | 0.2881     |   0.0 | 31.50
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 0.001195   | 0.001195   | 0.001195   |   0.0 |  6.24
-Output  | 0.000374   | 0.000374   | 0.000374   |   0.0 |  1.95
-Modify  | 4.841e-05  | 4.841e-05  | 4.841e-05  |   0.0 |  0.25
-Other   |            | 0.0004831  |            |       |  2.52
+Comm    | 0.0016075  | 0.0016075  | 0.0016075  |   0.0 |  0.18
+Output  | 0.0029165  | 0.0029165  | 0.0029165  |   0.0 |  0.32
+Modify  | 0.00013132 | 0.00013132 | 0.00013132 |   0.0 |  0.01
+Other   |            | 0.001896   |            |       |  0.21
 
-Nlocal:             64 ave          64 max          64 min
+Nlocal:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Nghost:            904 ave         904 max         904 min
+Nghost:            960 ave         960 max         960 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
-Neighs:           2024 ave        2024 max        2024 min
+Neighs:         191728 ave      191728 max      191728 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
 
-Total # of neighbors = 2024
-Ave neighs/atom = 31.625
-Ave special neighs/atom = 11.75
+Total # of neighbors = 191728
+Ave neighs/atom = 199.71667
+Ave special neighs/atom = 15.6
 Neighbor list builds = 0
 Dangerous builds = 0
 
 if "${tests}==1" then "write_data simulation_data/test.data nocoeff nofix"                       "quit"
-write_data simulation_data/test.data nocoeff nofix
+write_data      simulation_data/final.data nocoeff nofix
 System init for write_data ...
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
-quit
+Total wall time: 0:00:02

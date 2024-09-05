@@ -1,6 +1,6 @@
 
 # --- log file ---
-variable name string test
+variable name string just_hydrogen
 log ./logs/log.${name}
 # --- log file ---
 
@@ -22,7 +22,7 @@ improper_style harmonic
 
 # 2. Read the graphite platelet data file
 # 3. Define potentials parameters
-read_data ../geometry/carbonPlatelets/simulation_data/test.data  extra/atom/types 1
+read_data ../geometry/carbonPlatelets/simulation_data/final.data  extra/atom/types 1
 include PARM.lammps
 
 # 4. Generate the initial hydrogen atoms

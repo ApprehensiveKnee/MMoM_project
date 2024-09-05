@@ -7,7 +7,7 @@ log ./logs/log.${name}
 variable pre equal 112 # desired pressure (Atm)
 variable tem equal 300 # desired temperature (K)
 
-variable k1 equal 1.3 # spring constant
+variable k1 equal 1.5 # spring constant
 variable k2 equal 3.5 # spring constant
 
 units real
@@ -59,7 +59,7 @@ variable        cpt loop 51
 label           loop
 variable        zdes equal  -15+0.60*(${cpt}-1)
 variable        zave equal xcm(H2,z)
-fix             mytth2 H2 spring tether ${k1} 2.5 2.5 ${zdes} 0
+fix             mytth2 H2 spring tether ${k1} 0.5 0.5 ${zdes} 0
 run             10000
 fix             myat1 all ave/time 100 10 1000 v_zave v_zdes file simulation_data/abpot/${cpt}.dat
 run             50000
