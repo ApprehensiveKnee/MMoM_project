@@ -1,4 +1,6 @@
-LAMMPS (29 Aug 2024 - Development - patch_27Jun2024-1043-g9243959ca4)
+LAMMPS (27 Jun 2024)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #//     Filename: generate_platelets.lammps

@@ -1,4 +1,6 @@
-LAMMPS (29 Aug 2024 - Development - patch_27Jun2024-1043-g9243959ca4)
+LAMMPS (27 Jun 2024)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
 
 # --- log file ---
 include ../geometry/carbonPlatelets/dimensions.lammps
@@ -17,16 +19,16 @@ include ../geometry/carbonPlatelets/dimensions.lammps
 # - Lx, Ly  = 60/120 Å  to accomodate 500 Å^2 surface are of graphene (120 Å for MCB potential)
 variable        Lx equal "30"            # Define the in-plane dimensions
 variable        Ly equal "30"
-variable        H equal "9"         # Define the out-of-plane dimension
+variable        H equal "60"         # Define the out-of-plane dimension
 
 if "${H}==9" then "variable Lz equal 18"
-variable Lz equal 18
 if "${H}==15" then "variable Lz equal 15"
 if "${H}==30" then "variable Lz equal 15"
 if "${H}==60" then "variable Lz equal 30"
+variable Lz equal 30
 # WARNING: First run generate_platelets.lammps to get the corresponding correct system setup
 # for the chosen H value
 variable name string input${H}
-variable name string input9
+variable name string input60
 log ./logs/log.${name}
-log ./logs/log.input9
+log ./logs/log.input60
