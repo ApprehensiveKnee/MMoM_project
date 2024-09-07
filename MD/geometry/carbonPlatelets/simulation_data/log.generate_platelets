@@ -83,7 +83,7 @@ Finding 1-2 1-3 1-4 neighbors ...
     18 = max # of 1-4 neighbors
     18 = max # of special neighbors
   special bonds CPU = 0.000 seconds
-  read_data CPU = 0.009 seconds
+  read_data CPU = 0.014 seconds
 label done_test
 
 # ---------------------------]* C-C POTENTIALS PARAMETERS *[----------------------------
@@ -241,15 +241,15 @@ Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
 Per MPI rank memory allocation (min/avg/max) = 12.24 | 12.24 | 12.24 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
          0   9966.976       0              9966.976       0              60             60             60            -513.03647            240 
-         5   9957.3191      0              9957.3191      0              60             60             60            -261.112              240 
-Loop time of 0.00798002 on 1 procs for 5 steps with 240 atoms
+         5   9957.3192      0              9957.3192      0              60             60             60            -261.112              240 
+Loop time of 0.0159154 on 1 procs for 5 steps with 240 atoms
 
-100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+30.2% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = max force evaluations
   Energy initial, next-to-last, final = 
-      9966.97598173378   9958.84746476794   9957.31914235337
+      9966.97598173378   9958.84744934665    9957.3191577021
   Force two-norm initial, final = 95.814294 53.029818
   Force max component initial, final = 14.730588 9.6186701
   Final line search alpha, max atom move = 0.0077269221 0.074322714
@@ -258,13 +258,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0045137  | 0.0045137  | 0.0045137  |   0.0 | 56.56
-Bond    | 0.0031086  | 0.0031086  | 0.0031086  |   0.0 | 38.96
+Pair    | 0.0059725  | 0.0059725  | 0.0059725  |   0.0 | 37.53
+Bond    | 0.0074203  | 0.0074203  | 0.0074203  |   0.0 | 46.62
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 1.896e-06  | 1.896e-06  | 1.896e-06  |   0.0 |  0.02
+Comm    | 0.00062838 | 0.00062838 | 0.00062838 |   0.0 |  3.95
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0003558  |            |       |  4.46
+Other   |            | 0.001894   |            |       | 11.90
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -285,24 +285,24 @@ WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
 Per MPI rank memory allocation (min/avg/max) = 12.12 | 12.12 | 12.12 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-         5   9957.3191      212.29925      10169.618      298            60             60             60            -216.18291            240 
-       500   9957.3191      212.29925      10169.618      298            60             60             60            -216.18291            240 
-       505   9957.3191      212.29925      10169.618      298            60             60             60            -216.18291            240 
-Loop time of 0.24197 on 1 procs for 500 steps with 240 atoms
+         5   9957.3192      212.29925      10169.618      298            60             60             60            -216.18291            240 
+       500   9957.3192      212.29925      10169.618      298            60             60             60            -216.18291            240 
+       505   9957.3192      212.29925      10169.618      298            60             60             60            -216.18291            240 
+Loop time of 0.131671 on 1 procs for 500 steps with 240 atoms
 
-Performance: 178.534 ns/day, 0.134 hours/ns, 2066.369 timesteps/s, 495.929 katom-step/s
-99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+Performance: 328.090 ns/day, 0.073 hours/ns, 3797.335 timesteps/s, 911.360 katom-step/s
+90.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.11038    | 0.11038    | 0.11038    |   0.0 | 45.62
-Bond    | 0.12977    | 0.12977    | 0.12977    |   0.0 | 53.63
+Pair    | 0.051247   | 0.051247   | 0.051247   |   0.0 | 38.92
+Bond    | 0.078587   | 0.078587   | 0.078587   |   0.0 | 59.68
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 4.9289e-05 | 4.9289e-05 | 4.9289e-05 |   0.0 |  0.02
-Output  | 0.001324   | 0.001324   | 0.001324   |   0.0 |  0.55
-Modify  | 4.1942e-05 | 4.1942e-05 | 4.1942e-05 |   0.0 |  0.02
-Other   |            | 0.0004066  |            |       |  0.17
+Comm    | 6.1647e-05 | 6.1647e-05 | 6.1647e-05 |   0.0 |  0.05
+Output  | 0.00078638 | 0.00078638 | 0.00078638 |   0.0 |  0.60
+Modify  | 0.00040952 | 0.00040952 | 0.00040952 |   0.0 |  0.31
+Other   |            | 0.0005794  |            |       |  0.44
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -320,16 +320,16 @@ minimize        1.0e-4 1.0e-6 10 10
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
 Per MPI rank memory allocation (min/avg/max) = 13.25 | 13.25 | 13.25 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-       505   9957.3191      212.29925      10169.618      298            60             60             60            -216.18291            240 
-       506   9956.5837      212.29925      10168.883      298            60             60             60            -217.07844            240 
-Loop time of 0.0024795 on 1 procs for 1 steps with 240 atoms
+       505   9957.3192      212.29925      10169.618      298            60             60             60            -216.18291            240 
+       506   9956.5838      212.29925      10168.883      298            60             60             60            -217.07844            240 
+Loop time of 0.00118679 on 1 procs for 1 steps with 240 atoms
 
-100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+98.3% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
   Energy initial, next-to-last, final = 
-      9957.31914235337   9957.31914235337   9956.58374650462
+       9957.3191577021    9957.3191577021   9956.58376027973
   Force two-norm initial, final = 53.029818 37.875332
   Force max component initial, final = 9.6186701 5.8219051
   Final line search alpha, max atom move = 0.010396448 0.060527131
@@ -338,13 +338,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0013133  | 0.0013133  | 0.0013133  |   0.0 | 52.97
-Bond    | 0.00089099 | 0.00089099 | 0.00089099 |   0.0 | 35.93
+Pair    | 0.0005305  | 0.0005305  | 0.0005305  |   0.0 | 44.70
+Bond    | 0.00051358 | 0.00051358 | 0.00051358 |   0.0 | 43.27
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 9e-07      | 9e-07      | 9e-07      |   0.0 |  0.04
+Comm    | 7.08e-07   | 7.08e-07   | 7.08e-07   |   0.0 |  0.06
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.0002743  |            |       | 11.06
+Other   |            | 0.000142   |            |       | 11.97
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -365,24 +365,24 @@ WARNING: No fixes with time integration, atoms won't move (src/verlet.cpp:60)
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
 Per MPI rank memory allocation (min/avg/max) = 12.12 | 12.12 | 12.12 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-       506   9956.5837      212.29925      10168.883      298            60             60             60            -217.07844            240 
-      1000   9956.5837      212.29925      10168.883      298            60             60             60            -217.07844            240 
-      1006   9956.5837      212.29925      10168.883      298            60             60             60            -217.07844            240 
-Loop time of 0.243056 on 1 procs for 500 steps with 240 atoms
+       506   9956.5838      212.29925      10168.883      298            60             60             60            -217.07844            240 
+      1000   9956.5838      212.29925      10168.883      298            60             60             60            -217.07844            240 
+      1006   9956.5838      212.29925      10168.883      298            60             60             60            -217.07844            240 
+Loop time of 0.121316 on 1 procs for 500 steps with 240 atoms
 
-Performance: 177.737 ns/day, 0.135 hours/ns, 2057.137 timesteps/s, 493.713 katom-step/s
-100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+Performance: 356.095 ns/day, 0.067 hours/ns, 4121.466 timesteps/s, 989.152 katom-step/s
+98.9% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.10931    | 0.10931    | 0.10931    |   0.0 | 44.97
-Bond    | 0.13202    | 0.13202    | 0.13202    |   0.0 | 54.31
+Pair    | 0.04807    | 0.04807    | 0.04807    |   0.0 | 39.62
+Bond    | 0.072093   | 0.072093   | 0.072093   |   0.0 | 59.43
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 4.7576e-05 | 4.7576e-05 | 4.7576e-05 |   0.0 |  0.02
-Output  | 0.0012555  | 0.0012555  | 0.0012555  |   0.0 |  0.52
-Modify  | 4.0975e-05 | 4.0975e-05 | 4.0975e-05 |   0.0 |  0.02
-Other   |            | 0.0003898  |            |       |  0.16
+Comm    | 4.3549e-05 | 4.3549e-05 | 4.3549e-05 |   0.0 |  0.04
+Output  | 0.00074946 | 0.00074946 | 0.00074946 |   0.0 |  0.62
+Modify  | 4.2042e-05 | 4.2042e-05 | 4.2042e-05 |   0.0 |  0.03
+Other   |            | 0.000318   |            |       |  0.26
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -400,16 +400,16 @@ minimize        1.0e-4 1.0e-6 10 10
 Generated 0 of 0 mixed pair_coeff terms from geometric mixing rule
 Per MPI rank memory allocation (min/avg/max) = 13.25 | 13.25 | 13.25 Mbytes
    Step         PotEng         KinEng         TotEng          Temp            Lx             Ly             Lz           Press         Atoms   
-      1006   9956.5837      212.29925      10168.883      298            60             60             60            -217.07844            240 
+      1006   9956.5838      212.29925      10168.883      298            60             60             60            -217.07844            240 
       1007   9956.2307      212.29925      10168.53       298            60             60             60            -216.70285            240 
-Loop time of 0.00245549 on 1 procs for 1 steps with 240 atoms
+Loop time of 0.00117933 on 1 procs for 1 steps with 240 atoms
 
-22.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+98.8% CPU use with 1 MPI tasks x no OpenMP threads
 
 Minimization stats:
   Stopping criterion = energy tolerance
   Energy initial, next-to-last, final = 
-      9956.58374650462   9956.58374650462   9956.23066929762
+      9956.58376027973   9956.58376027973   9956.23067410653
   Force two-norm initial, final = 37.875332 32.09281
   Force max component initial, final = 5.8219051 5.416202
   Final line search alpha, max atom move = 0.017176508 0.093031439
@@ -418,13 +418,13 @@ Minimization stats:
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.0013023  | 0.0013023  | 0.0013023  |   0.0 | 53.04
-Bond    | 0.00087843 | 0.00087843 | 0.00087843 |   0.0 | 35.77
+Pair    | 0.00052546 | 0.00052546 | 0.00052546 |   0.0 | 44.56
+Bond    | 0.00051658 | 0.00051658 | 0.00051658 |   0.0 | 43.80
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 7.61e-07   | 7.61e-07   | 7.61e-07   |   0.0 |  0.03
+Comm    | 2.93e-07   | 2.93e-07   | 2.93e-07   |   0.0 |  0.02
 Output  | 0          | 0          | 0          |   0.0 |  0.00
 Modify  | 0          | 0          | 0          |   0.0 |  0.00
-Other   |            | 0.000274   |            |       | 11.16
+Other   |            | 0.000137   |            |       | 11.62
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0
@@ -448,21 +448,21 @@ Per MPI rank memory allocation (min/avg/max) = 12.12 | 12.12 | 12.12 Mbytes
       1007   9956.2307      212.29925      10168.53       298            60             60             60            -216.70285            240 
       1500   9956.2307      212.29925      10168.53       298            60             60             60            -216.70285            240 
       1507   9956.2307      212.29925      10168.53       298            60             60             60            -216.70285            240 
-Loop time of 0.247291 on 1 procs for 500 steps with 240 atoms
+Loop time of 0.123071 on 1 procs for 500 steps with 240 atoms
 
-Performance: 174.693 ns/day, 0.137 hours/ns, 2021.912 timesteps/s, 485.259 katom-step/s
-99.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+Performance: 351.018 ns/day, 0.068 hours/ns, 4062.711 timesteps/s, 975.051 katom-step/s
+99.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 0.11277    | 0.11277    | 0.11277    |   0.0 | 45.60
-Bond    | 0.13192    | 0.13192    | 0.13192    |   0.0 | 53.35
+Pair    | 0.048      | 0.048      | 0.048      |   0.0 | 39.00
+Bond    | 0.073862   | 0.073862   | 0.073862   |   0.0 | 60.02
 Neigh   | 0          | 0          | 0          |   0.0 |  0.00
-Comm    | 5.1563e-05 | 5.1563e-05 | 5.1563e-05 |   0.0 |  0.02
-Output  | 0.0020767  | 0.0020767  | 0.0020767  |   0.0 |  0.84
-Modify  | 4.2391e-05 | 4.2391e-05 | 4.2391e-05 |   0.0 |  0.02
-Other   |            | 0.0004275  |            |       |  0.17
+Comm    | 4.729e-05  | 4.729e-05  | 4.729e-05  |   0.0 |  0.04
+Output  | 0.00080413 | 0.00080413 | 0.00080413 |   0.0 |  0.65
+Modify  | 4.207e-05  | 4.207e-05  | 4.207e-05  |   0.0 |  0.03
+Other   |            | 0.0003153  |            |       |  0.26
 
 Nlocal:            240 ave         240 max         240 min
 Histogram: 1 0 0 0 0 0 0 0 0 0

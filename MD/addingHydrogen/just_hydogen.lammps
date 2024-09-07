@@ -1,8 +1,12 @@
 
 # --- log file ---
 include ../geometry/carbonPlatelets/dimensions.lammps
-if "${H} == 60" then 'variable name string just_hydrogen_big' &
-else 'variable name string just_hydrogen_small'
+if "${H} == 60" then &
+'variable name string just_hydrogen_big' &
+elif "${H} == 9" &
+'variable name string just_hydrogen_small' &
+else &
+'variable name string just_hydrogen_medium'
 log ./logs/log.${name}
 # --- log file ---
 
@@ -43,8 +47,12 @@ group           H2 type 1
 variable hydrogen atom "type==1"
 group hydrogen dynamic all var hydrogen
 variable nH equal count(hydrogen)
-if "${H} == 60" then 'fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount_big.data' &
-else 'fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount_small.data'
+if "${H} == 60" then &
+'fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount_big.data' &
+elif "${H} == 9" &
+'fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount_small.data' &
+else &
+'fix myat1 all ave/time 100 10 1000 v_nH file simulation_data/hydrogen_counts/hydrogenCount_medium.data'
 
 # 5. Equilibration step
 thermo 1000
@@ -64,8 +72,12 @@ thermo_style custom step temp pe ke etotal press vol
 
 # Fix the motion of the outer carbons
 
-if "${H} == 60" then 'dump           test_dump all atom 100 simulation_data/dumps/just_hydrogen_big.lammpstrj' &
-else 'dump            test_dump all atom 100 simulation_data/dumps/just_hydrogen_small.lammpstrj'
+if "${H} == 60" then &
+'dump           test_dump all atom 100 simulation_data/dumps/just_hydrogen_big.lammpstrj' &
+elif "${H} == 9" &
+'dump            test_dump all atom 100 simulation_data/dumps/just_hydrogen_small.lammpstrj' &
+else &
+'dump            test_dump all atom 100 simulation_data/dumps/just_hydrogen_medium.lammpstrj'
 
 run 100000
 
@@ -85,8 +97,12 @@ run 40000
 # After the number of hydrogen atoms has been equilibrated,
 # compute density profile for the hydrogen atoms along the absorbate direction
 compute cc1 H2 chunk/atom bin/1d z 0.0 0.1
-if "${H} == 60" then 'fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density_with_big.profile' &
-else 'fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density_with_small.profile'
+if "${H} == 60" then &
+'fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density_with_big.profile' &
+elif "${H} == 9" &
+'fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density_with_small.profile' &
+else &
+'fix 1 H2 ave/chunk 100 100 10000 cc1 density/mass norm all file simulation_data/density_profiles/density_with_medium.profile'
 
 run 10000
 # =================================================================================================
