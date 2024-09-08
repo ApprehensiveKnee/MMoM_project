@@ -1,0 +1,78 @@
+! NOTE THE MAJOR DIFFERENCE WITH RESPECT TO HYDROGEN ABSORPTION (1 MOLECULE):
+! in this case, we need to perform a constrained optimization, i.e. the carbon atoms
+! are not free to move along the xy plane -> introducing 2 molecules of H2 close together
+! implicitly made favourable a conformation for the carbon layers in which the top plane shifted
+! so to ABB stacking. This was not necessary for the single molecule simulation.
+
+
+&control
+   title           = "5H2_absorption_C_strain" 
+   restart_mode    = 'from_scratch'
+   calculation     = 'scf' 
+   outdir          = '../../results/remote/5h2_abs_strain' 
+   pseudo_dir      = '/home/edoardocabiati/.burai/.pseudopot' 
+   prefix          = '5H2abs_C_strain' 
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    a     =  4.23342e+00
+    ibrav = 0
+    nat   = 24
+    ntyp  = 1
+    ecutwfc = 40.0,
+    ecutrho = 400.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    !electron_maxstep=100
+    mixing_mode='local-TF'
+    mixing_beta=0.05
+    !diagonalization="cg"
+    !conv_thr=1e-6
+/
+&ions
+/
+&cell
+    !cell_factor=4
+    !cell_dofree='ibrav'
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+    H  1.00784  H.pz-rrkjus_psl.0.1.UPF
+CELL_PARAMETERS (alat=  8.00000437)
+   1.175943614   0.000054035   0.004685887
+  -0.587981361   1.018361515   0.000315508
+   0.008408643   0.006182238   2.462703596
+
+ATOMIC_POSITIONS (crystal)
+C               -0.0000068980       -0.0000473046        0.1850858124
+C                0.0000919661        0.0000718523        0.4066565760
+C               -0.0000182564       -0.0000221771        0.8629867095
+C                0.1665778423        0.3332299511        0.1828117454
+C                0.3334663196        0.1667605912        0.4088007605
+C                0.1669262190        0.3336159703        0.8632814990
+C                0.5000027735       -0.0000249419        0.1853381926
+C                0.5000783496       -0.0000244195        0.4063407825
+C                0.4999636407       -0.0000258672        0.8635177373
+C                0.6665657339        0.3331804154        0.1828803464
+C                0.8334947374        0.1667119536        0.4092237573
+C                0.6667754416        0.3335427981        0.8641055440
+C               -0.0000724582        0.4998658061        0.1849525289
+C                0.0000166628        0.4998928870        0.4068376923
+C                0.0000990215        0.5001449012        0.8617722031
+C                0.1666417340        0.8332460473        0.1828408015
+C                0.3333130859        0.6665231619        0.4088498485
+C                0.1664834050        0.8331382426        0.8690923553
+C                0.4999469026        0.4999229175        0.1852567738
+C                0.4999811892        0.4998847173        0.4067259656
+C                0.5001860256        0.5002951825        0.8697378674
+C                0.6666333286        0.8332827519        0.1827859466
+C                0.8333449038        0.6666250041        0.4087678657
+C                0.6667997453        0.8335243331        0.8624615789
+
+K_POINTS {automatic}
+    1 1 1 0 0 0

@@ -1,0 +1,77 @@
+! NOTE THE MAJOR DIFFERENCE WITH RESPECT TO HYDROGEN ABSORPTION (1 MOLECULE):
+! in this case, we need to perform a constrained optimization, i.e. the carbon atoms
+! are not free to move along the xy plane -> introducing 2 molecules of H2 close together
+! implicitly made favourable a conformation for the carbon layers in which the top plane shifted
+! so to ABB stacking. This was not necessary for the single molecule simulation.
+
+
+&control
+   title           = "4H2_absorption_C_strain" 
+   restart_mode    = 'from_scratch'
+   calculation     = 'scf' 
+   outdir          = '../../results/remote/4h2_abs_strain' 
+   pseudo_dir      = '/home/edoardocabiati/.burai/.pseudopot' 
+   prefix          = '4H2abs_C_strain' 
+    tstress         = .true 
+    tprnfor         = .true 
+/
+&system
+    a     =  4.23342e+00
+    ibrav = 0
+    nat   = 24
+    ntyp  = 1
+    ecutwfc = 40.0,
+    ecutrho = 400.0,
+    input_dft='LDA',
+    occupations='smearing',
+    smearing='gaussian',
+    degauss=0.01,
+/
+&electrons
+    !electron_maxstep=100
+    mixing_mode='local-TF'
+    mixing_beta=0.05
+    !diagonalization="cg"
+    !conv_thr=1e-6
+/
+&ions
+/
+&cell
+    !cell_factor=4
+    !cell_dofree='ibrav'
+/
+ATOMIC_SPECIES
+    C 12.011 C.pz-n-rrkjus_psl.0.1.UPF !ultrasoft potential
+    H  1.00784  H.pz-rrkjus_psl.0.1.UPF
+CELL_PARAMETERS (alat=  8.00000437)
+   1.165975772   0.000010240  -0.000236927
+  -0.582979804   1.009732385   0.000383813
+  -0.000667226   0.000830964   2.156237543
+
+ATOMIC_POSITIONS (crystal)
+C                0.0000238342       -0.0000718534        0.1746619261
+C                0.0000115369        0.0000100443        0.4178075488
+C                0.0000074235        0.0000140068        0.8566901397
+C                0.1666558149        0.3332604120        0.1706760822
+C                0.3333736254        0.1666809360        0.4213848760
+C                0.1666860756        0.3333142111        0.8589533429
+C                0.5000339929       -0.0000423261        0.1748791467
+C                0.5000472005       -0.0000111523        0.4175181952
+C                0.5000080142        0.0000390846        0.8576077934
+C                0.6666879367        0.3332718199        0.1705398882
+C                0.8333708835        0.1666097687        0.4214018404
+C                0.6666563779        0.3333768030        0.8581180516
+C                0.0000195365        0.4999211355        0.1750451470
+C                0.0000125514        0.4999224501        0.4172894748
+C               -0.0000080002        0.5000417306        0.8577133343
+C                0.1666875101        0.8332639707        0.1707591457
+C                0.3333746061        0.6666211428        0.4213792591
+C                0.1666579372        0.8333842849        0.8589662628
+C                0.5000177420        0.4999046233        0.1752932671
+C                0.5000189925        0.5000194525        0.4171394037
+C                0.4999955928        0.4999795555        0.8582058322
+C                0.6667007110        0.8332993149        0.1709186910
+C                0.8333315156        0.6666415104        0.4213670032
+C                0.6666802516        0.8333296530        0.8591314733         
+K_POINTS {automatic}
+    1 1 1 0 0 0 
