@@ -2,7 +2,7 @@
 
 This repository contains the code and data for the project "Molecular Modeling of Materials" (MMoM) at the Politecnico di Milano. The <b>chosen topic</b> is the study of absorption of hydrogen molecules in gas phase by graphene nanofibers (GNFs). Both DFT and MD analyses are performed to investigate the phenomenon.
 
-![dynamics](/MMoM_project/imgs/movie.gif)
+![dynamics](https://github.com/ApprehensiveKnee/MMoM_project/blob/main/imgs/movie.gif)
 
 ## Project structure
 
