@@ -1,3 +1,12 @@
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#//     Filename: test.lammps
+#//     File Type: LAMMPS input script
+#//     Description: simulation script to test the GCMC emsemble for hydrogen atoms. The dimension of the system taken into 
+#//                  smaller with respect to the production one, to ease the computational burden.
+#//     Author: Edoardo Cabiati
+#//     Date: 2024-09-05
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 # --- log file ---
 variable name string test
